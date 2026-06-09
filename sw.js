@@ -1,5 +1,15 @@
-var CACHE = 'strefa-pwa-v1';
-var ASSETS = ['./', './index.html'];
+var CACHE = 'strefa-pwa-v2';
+var ASSETS = [
+  './',
+  './index.html',
+  './gm-nx7k3.html',
+  './admin-zx9k2.html',
+  './manifest.json',
+  './manifest-gm.json',
+  './manifest-admin.json',
+  './icon-192.png',
+  './icon-512.png'
+];
 
 self.addEventListener('install', function(e) {
   self.skipWaiting();
@@ -11,7 +21,10 @@ self.addEventListener('install', function(e) {
 self.addEventListener('activate', function(e) {
   e.waitUntil(
     caches.keys().then(function(keys) {
-      return Promise.all(keys.filter(function(k) { return k !== CACHE; }).map(function(k) { return caches.delete(k); }));
+      return Promise.all(
+        keys.filter(function(k) { return k !== CACHE; })
+            .map(function(k) { return caches.delete(k); })
+      );
     }).then(function() { return self.clients.claim(); })
   );
 });
