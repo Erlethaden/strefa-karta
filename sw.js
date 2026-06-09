@@ -1,12 +1,8 @@
-var CACHE = 'strefa-pwa-v2';
+var CACHE = 'strefa-pwa-v3';
 var ASSETS = [
   './',
   './index.html',
-  './gm-nx7k3.html',
-  './admin-zx9k2.html',
   './manifest.json',
-  './manifest-gm.json',
-  './manifest-admin.json',
   './icon-192.png',
   './icon-512.png'
 ];
@@ -33,7 +29,8 @@ self.addEventListener('fetch', function(e) {
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       var fresh = fetch(e.request).then(function(res) {
-        caches.open(CACHE).then(function(c) { c.put(e.request, res.clone()); });
+        var clone = res.clone(); // clone BEFORE returning
+        caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
         return res;
       }).catch(function() { return cached; });
       return cached || fresh;
