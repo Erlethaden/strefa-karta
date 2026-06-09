@@ -313,6 +313,64 @@ body{background:#040604;color:var(--t2);font-family:'Share Tech Mono',monospace;
 #crop-hint{font-size:9px;color:var(--t0);text-align:center;margin:6px 0 10px;letter-spacing:1px}
 .crop-btns{display:flex;gap:8px;justify-content:flex-end}
 
+
+/* ── TAB BAR ─────────────────────────────────── */
+#tab-bar{background:var(--bg2);border-bottom:2px solid var(--bd2);padding:0 10px;display:flex;gap:2px}
+.tab-btn{background:none;border:none;border-bottom:2px solid transparent;color:var(--t0);
+  font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:2px;
+  padding:8px 14px;cursor:pointer;margin-bottom:-2px;transition:.2s}
+.tab-btn:hover{color:var(--t2)}
+.tab-btn.active{color:var(--g3);border-bottom-color:var(--g2)}
+
+/* ── GM CARDS ────────────────────────────────── */
+.gm-card{background:var(--bg2);border:1px solid var(--g1);padding:12px;cursor:pointer;transition:.2s}
+.gm-card:hover{border-color:var(--g2);background:var(--bg3)}
+.gm-card-name{font-size:14px;color:var(--g3);letter-spacing:2px}
+.gm-card-sub{font-size:10px;color:var(--t0);margin-bottom:8px}
+.gm-stat-row{display:flex;align-items:center;gap:6px;margin-bottom:3px}
+.gm-stat-lbl{font-size:10px;color:var(--t0);min-width:46px}
+.gm-stat-val{font-size:11px;color:var(--t2);min-width:28px}
+.gm-bar{flex:1;height:5px;background:var(--g1);border-radius:3px;overflow:hidden}
+.gm-bar-fill{height:100%;border-radius:3px}
+.gm-ts{font-size:9px;color:var(--t0);margin-top:6px}
+.modal-close-btn{float:right;background:var(--bg2);border:1px solid var(--g1);
+  color:var(--t1);font-family:'Share Tech Mono',monospace;font-size:11px;
+  padding:3px 8px;cursor:pointer;position:sticky;top:0}
+.modal-close-btn:hover{border-color:var(--r2);color:var(--r3)}
+
+/* ── ADMIN ───────────────────────────────────── */
+.adm-tab{padding:8px 16px;cursor:pointer;font-size:11px;letter-spacing:1px;color:var(--t0);
+  border-bottom:2px solid transparent;transition:.2s}
+.adm-tab:hover{color:var(--t2)}
+.adm-tab.active{color:var(--g3);border-bottom-color:var(--g2)}
+.adm-tr td{padding:5px 8px;border-bottom:1px solid var(--g1);font-size:11px;vertical-align:middle}
+.adm-tr:hover td{background:var(--bg3)}
+.btn-amber{border-color:var(--a1);color:var(--a2)}
+.btn-amber:hover{border-color:var(--a2);color:var(--a3)}
+
+/* ── USER ROLE CARD ──────────────────────────── */
+.user-role-card{background:var(--bg2);border:1px solid var(--bd2);padding:10px 14px;
+  margin-bottom:8px;display:flex;align-items:center;gap:14px;flex-wrap:wrap}
+.user-role-card .unick{font-size:12px;color:var(--g3);letter-spacing:1px;min-width:120px}
+.user-role-card .uemail{font-size:10px;color:var(--t0);flex:1}
+.role-toggle{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--t1);cursor:pointer}
+.role-toggle input{cursor:pointer;accent-color:var(--g2)}
+.role-toggle.admin-role input{accent-color:var(--r2)}
+
+/* GM detail sections */
+.gd-title{font-size:16px;color:var(--g3);letter-spacing:3px;margin-bottom:2px}
+.gd-sub{font-size:10px;color:var(--t0);letter-spacing:1px;margin-bottom:10px}
+.gd-sec{font-size:10px;color:var(--g2);letter-spacing:2px;margin:10px 0 5px}
+.gd-row{display:flex;justify-content:space-between;padding:1px 0;font-size:11px}
+.gd-lbl{color:var(--t0)}
+.gd-val{color:var(--t2)}
+.gd-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 16px;margin-bottom:6px}
+.gd-sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px}
+.gd-circles{letter-spacing:1px;font-size:13px}
+.gd-cf{color:var(--g2)}
+.gd-ce{color:var(--t0)}
+@media(max-width:500px){.gd-grid,.gd-sk-grid{grid-template-columns:1fr}}
+
 /* ── WARNING STRIP ──────────────────────────────── */
 #warn-strip{max-width:1140px;margin:0 auto;display:none;align-items:center;gap:0;flex-wrap:wrap;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;border-bottom:1px solid transparent;overflow:hidden}
 #warn-strip.ws-a{display:flex;background:rgba(122,84,16,.35);border-color:var(--a2)}
@@ -364,6 +422,13 @@ html{background:#040604;scrollbar-width:thin;scrollbar-color:var(--g1) var(--bg2
     <button class="btn btn-sm btn-dim" onclick="logoutUser()">Wyloguj</button>
   </div>
   <span id="save-msg"></span>
+</div>
+
+
+<div id="tab-bar" style="display:none">
+  <button class="tab-btn active" id="tbtn-karta"  onclick="showMainTab('karta')">⚔ KARTA</button>
+  <button class="tab-btn"        id="tbtn-gm"     onclick="showMainTab('gm')"    style="display:none">&#128101; GM</button>
+  <button class="tab-btn"        id="tbtn-admin"  onclick="showMainTab('admin')" style="display:none">&#9881; ADMIN</button>
 </div>
 
 <!-- LEVEL UP POPUP -->
@@ -593,12 +658,12 @@ html{background:#040604;scrollbar-width:thin;scrollbar-color:var(--g1) var(--bg2
    (aplikacja dziala wtedy w trybie offline).
    ═══════════════════════════════════════════════ */
 var FIREBASE_CONFIG = {
-  apiKey:            "AIzaSyDdkGEk9stdgTMwL4csJ3S1okGeJJzaJm4",
-  authDomain:        "strefa-karta.firebaseapp.com",
-  projectId:         "strefa-karta",
-  storageBucket:     "strefa-karta.firebasestorage.app",
-  messagingSenderId: "550880967006",
-  appId:             "1:550880967006:web:bae2a37f35705cea5477cf"
+  apiKey:            "BRAK",
+  authDomain:        "BRAK",
+  projectId:         "BRAK",
+  storageBucket:     "BRAK",
+  messagingSenderId: "BRAK",
+  appId:             "BRAK"
 };
 
 /* ─── constants ──────────────────────────────── */
@@ -693,7 +758,14 @@ function loginGoogle() {
 
 function logoutUser() {
   if (!fbAuth) return;
-  if (confirm('Wylogowac sie?')) fbAuth.signOut();
+  if (confirm('Wylogowac sie?')) {
+    fbAuth.signOut();
+    var tb = document.getElementById('tab-bar');
+    if (tb) tb.style.display = 'none';
+    userRole = { gm: false, admin: false };
+    gmRosterLoaded = false; admCharsLoaded = false;
+    showMainTab('karta');
+  }
 }
 
 /* ─── char list ──────────────────────────────── */
@@ -1685,6 +1757,8 @@ function checkNick(user) {
         if (ne) ne.textContent = userNick;
         writeLog('login', {});
         loadCharList();
+        loadUserRole(user.uid);
+        document.getElementById('tab-bar').style.display = 'flex';
       } else {
         // First login — show nick prompt
         var ni = document.getElementById('nick-input');
@@ -1709,7 +1783,7 @@ function saveNick() {
   if (nick.length > 24)         { err.textContent = 'Maksimum 24 znaki.'; return; }
   err.textContent = '';
   fbDB.collection('users').doc(fbUser.uid)
-    .set({ nick: nick, createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
+    .set({ nick: nick, email: fbUser.email||'', photoURL: fbUser.photoURL||'', displayName: fbUser.displayName||'', createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true })
     .then(function() {
       userNick = nick;
       var ne = document.getElementById('auth-name');
@@ -1717,6 +1791,8 @@ function saveNick() {
       document.getElementById('nick-modal').classList.remove('open');
       writeLog('login', { firstTime: true });
       loadCharList();
+      loadUserRole(fbUser.uid);
+      document.getElementById('tab-bar').style.display = 'flex';
     })
     .catch(function(e) {
       err.textContent = 'Błąd: ' + e.message;
@@ -1876,6 +1952,398 @@ function cropTM(e){ e.preventDefault();
 }
 function cropTE(){ cropDragStart=null; lastTD=null; }
 
+
+/* ─── ROLE SYSTEM + TABS ────────────────────── */
+var ADMIN_UID = 'cdZ7xpadjUMi94pov8CzkkPGjVE3';
+var userRole  = { gm: false, admin: false };
+
+function loadUserRole(uid) {
+  // Hardcoded admin always has all tabs
+  if (uid === ADMIN_UID) {
+    userRole = { gm: true, admin: true };
+    applyRoleTabs();
+    return;
+  }
+  fbDB.collection('roles').doc(uid).get()
+    .then(function(doc) {
+      if (doc.exists) userRole = { gm: !!doc.data().gm, admin: !!doc.data().admin };
+      else            userRole = { gm: false, admin: false };
+      applyRoleTabs();
+    })
+    .catch(function() { applyRoleTabs(); });
+}
+
+function applyRoleTabs() {
+  var bar = document.getElementById('tab-bar');
+  if (bar) bar.style.display = 'flex';
+  var bg = document.getElementById('tbtn-gm');
+  var ba = document.getElementById('tbtn-admin');
+  if (bg) bg.style.display = (userRole.gm || userRole.admin) ? '' : 'none';
+  if (ba) ba.style.display = userRole.admin ? '' : 'none';
+}
+
+function showMainTab(name) {
+  var karta = document.querySelector('.page-wrap');
+  var gm    = document.getElementById('gm-section');
+  var adm   = document.getElementById('admin-section');
+  if (karta) karta.style.display = name === 'karta' ? '' : 'none';
+  if (gm)    gm.style.display    = name === 'gm'    ? '' : 'none';
+  if (adm)   adm.style.display   = name === 'admin' ? '' : 'none';
+  ['karta','gm','admin'].forEach(function(t) {
+    var btn = document.getElementById('tbtn-'+t);
+    if (btn) btn.classList.toggle('active', t === name);
+  });
+  if (name === 'gm'    && !gmRosterLoaded) gmLoadRoster();
+  if (name === 'admin' && !admCharsLoaded) admLoadRoster();
+}
+
+/* ─── GM PANEL ───────────────────────────────── */
+var gmRosterLoaded = false;
+var gmRosterData   = [];
+
+function gmLoadRoster() {
+  if (!fbDB || !fbUser) return;
+  fbDB.collection('roster').get().then(function(snap) {
+    gmRosterData = snap.docs.map(function(d) {
+      return Object.assign({ id: d.id }, d.data());
+    }).sort(function(a,b) {
+      return (a.pseudonim||'').localeCompare(b.pseudonim||'');
+    });
+    gmRenderRoster();
+    gmRosterLoaded = true;
+    document.getElementById('gm-count').textContent = '(' + gmRosterData.length + ')';
+  }).catch(function(e) { console.warn('GM roster:', e.message); });
+}
+
+function gmRenderRoster() {
+  var grid = document.getElementById('gm-roster-grid');
+  grid.innerHTML = '';
+  gmRosterData.forEach(function(c) {
+    var card = document.createElement('div');
+    card.className = 'gm-card';
+    card.onclick = function() { gmOpenDetail(c.id); };
+    var pzPct  = c.maxPz > 0 ? Math.min(100, Math.round(c.pz/c.maxPz*100)) : 0;
+    var radPct = Math.min(100, Math.round((c.rad||0)/9*100));
+    var strPct = Math.min(100, Math.round((c.stres||0)/9*100));
+    var pzCol  = pzPct > 50 ? 'var(--g2)' : pzPct > 25 ? 'var(--a2)' : 'var(--r2)';
+    var radCol = c.rad >= 7 ? 'var(--r2)' : c.rad >= 4 ? 'var(--a2)' : 'var(--g2)';
+    var strCol = c.stres >= 5 ? 'var(--r2)' : c.stres >= 3 ? 'var(--a2)' : 'var(--g2)';
+    var port   = (c.charData && c.charData.portrait) ? c.charData.portrait : '';
+    var ago    = gmTimeAgo(c.lastModified);
+    card.innerHTML =
+      '<div style="display:flex;gap:10px;align-items:flex-start;margin-bottom:8px">' +
+        '<div style="width:52px;height:52px;flex-shrink:0;border:1px solid var(--g1);' +
+          (port ? 'background:url('+port+') center/cover;background-size:cover'
+                : 'background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--t0);font-size:16px') +
+        '">' + (port ? '' : '&#128100;') + '</div>' +
+        '<div style="flex:1;min-width:0">' +
+          '<div class="gm-card-name">' + escHtml(c.pseudonim||'???') + '</div>' +
+          '<div class="gm-card-sub">' + escHtml(c.frakcja||'—') + (c.nick ? ' · ' + escHtml(c.nick) : '') + '</div>' +
+        '</div>' +
+      '</div>' +
+      '<div class="gm-stat-row"><span class="gm-stat-lbl">PZ</span><span class="gm-stat-val">' + (c.pz||0) + '/' + (c.maxPz||5) + '</span>' +
+        '<div class="gm-bar"><div class="gm-bar-fill" style="width:'+pzPct+'%;background:'+pzCol+'"></div></div></div>' +
+      '<div class="gm-stat-row"><span class="gm-stat-lbl">RAD</span><span class="gm-stat-val">' + (c.rad||0) + '</span>' +
+        '<div class="gm-bar"><div class="gm-bar-fill" style="width:'+radPct+'%;background:'+radCol+'"></div></div></div>' +
+      '<div class="gm-stat-row"><span class="gm-stat-lbl">STRES</span><span class="gm-stat-val">' + (c.stres||0) + '</span>' +
+        '<div class="gm-bar"><div class="gm-bar-fill" style="width:'+strPct+'%;background:'+strCol+'"></div></div></div>' +
+      (ago ? '<div class="gm-ts">' + ago + '</div>' : '');
+    grid.appendChild(card);
+  });
+}
+
+function gmOpenDetail(charId) {
+  var c = gmRosterData.find(function(x) { return x.id === charId; });
+  if (!c) return;
+  document.getElementById('gm-detail-content').innerHTML = gmRenderDetail(c, c.charData||{});
+  document.getElementById('gm-detail-modal').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function gmCloseDetailBtn() {
+  document.getElementById('gm-detail-modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function gmCloseDetail(e) {
+  if (e.target === document.getElementById('gm-detail-modal')) gmCloseDetailBtn();
+}
+
+function gmDots(v, mx) {
+  var s = '';
+  for (var i = 1; i <= mx; i++)
+    s += '<span class="' + (i <= v ? 'gd-cf' : 'gd-ce') + '">&#9679;</span>';
+  return '<span class="gd-circles">' + s + '</span>';
+}
+
+function gmRenderDetail(c, d) {
+  var attrs = d.attrs || {};
+  var skills = d.skills || {};
+  var wyr = parseInt(attrs.wyr || 0);
+  var port = (d.portrait || '');
+  var lvl = 1, exp = parseInt(d['f-exp']||0), es = 0;
+  while(true){var cost=lvl<=5?100:Math.floor((lvl-1)/5)*250; if(es+cost<=exp){es+=cost;lvl++;}else break;}
+
+  var h = '';
+  if (port) h += '<div style="float:right;margin:0 0 10px 14px"><img src="'+port+'" style="width:90px;height:90px;object-fit:cover;border:1px solid var(--g1)"></div>';
+  h += '<div class="gd-title">' + escHtml(c.pseudonim||'???') + '</div>';
+  h += '<div class="gd-sub">' + escHtml(c.frakcja||'—') + ' &nbsp;·&nbsp; Poziom '+lvl+' &nbsp;·&nbsp; '+exp+' EXP' + (c.nick ? ' &nbsp;·&nbsp; ' + escHtml(c.nick) : '') + '</div>';
+  h += '<hr style="border:none;border-top:1px solid var(--bd2);margin:8px 0">';
+
+  h += '<div class="gd-sec">ATRYBUTY</div><div class="gd-grid">';
+  [['Wytrzymałość (WYR)','wyr'],['Zręczność (ZRC)','zrc'],
+   ['Percepcja (PER)','per'],['Umysł (UMY)','umy'],['Charyzma (CHA)','cha']].forEach(function(a){
+    h += '<div class="gd-row"><span class="gd-lbl">'+a[0]+'</span>'+gmDots(parseInt(attrs[a[1]]||0),5)+'</div>';
+  });
+  h += '</div>';
+
+  h += '<div class="gd-sec">UMIEJĘTNOŚCI</div><div class="gd-sk-grid">';
+  [['Broń Długa','bron-dluga'],['Broń Krótka','bron-krotka'],['Broń Biała','bron-biala'],
+   ['Miotanie','miotanie'],['Skradanie','skradanie'],['Akrobatyka','akrobatyka'],
+   ['Kondycja','kondycja'],['Technika Zony','tech-zony'],['Medycyna Pol.','medycyna'],
+   ['Wiedza o Zonie','wiedza-zona'],['Surwiwal','surwiwal'],['Perswazja','perswazja'],
+   ['Dowodzenie','dowodzenie'],['Zastraszanie','zastraszanie'],['Obs. Detektora','detektory']].forEach(function(sk){
+    var v = parseInt(skills[sk[1]]||0); if(!v) return;
+    h += '<div class="gd-row"><span class="gd-lbl">'+escHtml(sk[0])+'</span>'+gmDots(v,5)+'</div>';
+  });
+  h += '</div>';
+
+  h += '<hr style="border:none;border-top:1px solid var(--bd2);margin:8px 0">';
+  h += '<div class="gd-sec">STAN ORGANIZMU</div>';
+  h += '<div class="gd-row"><span class="gd-lbl">PZ</span><span class="gd-val">'+(d['f-hp']||wyr+5)+' / '+(wyr+5)+'</span></div>';
+  h += '<div class="gd-row"><span class="gd-lbl">RAD</span>'+gmDots(parseInt(d.rad||0),9)+'</div>';
+  h += '<div class="gd-row"><span class="gd-lbl">STRES</span>'+gmDots(parseInt(d.stres||0),9)+'</div>';
+  h += '<div class="gd-row"><span class="gd-lbl">Ruble</span><span class="gd-val">'+(d['f-ruble']||0)+' RU</span></div>';
+
+  if(d['f-bron-g']||d['f-bron-b']||d['f-bron-bw']||d['f-pancerz']) {
+    h += '<hr style="border:none;border-top:1px solid var(--bd2);margin:8px 0">';
+    h += '<div class="gd-sec">EKWIPUNEK</div>';
+    if(d['f-bron-g'])  h += '<div class="gd-row"><span class="gd-lbl">Broń G</span><span class="gd-val">'+escHtml(d['f-bron-g'])+(d['f-bron-g-obr']?' Obr:'+escHtml(d['f-bron-g-obr']):'')+'</span></div>';
+    if(d['f-bron-b'])  h += '<div class="gd-row"><span class="gd-lbl">Broń B</span><span class="gd-val">'+escHtml(d['f-bron-b'])+'</span></div>';
+    if(d['f-pancerz']) h += '<div class="gd-row"><span class="gd-lbl">Pancerz</span><span class="gd-val">'+escHtml(d['f-pancerz'])+'</span></div>';
+    if(d['f-detektor'])h += '<div class="gd-row"><span class="gd-lbl">Detektor</span><span class="gd-val">'+escHtml(d['f-detektor'])+'</span></div>';
+  }
+
+  var bpItems = (d.bp||[]).filter(function(it){return it&&it.n;});
+  if(bpItems.length) {
+    h += '<hr style="border:none;border-top:1px solid var(--bd2);margin:8px 0">';
+    h += '<div class="gd-sec">PLECAK</div>';
+    bpItems.forEach(function(it,i){
+      h += '<div class="gd-row"><span class="gd-lbl" style="min-width:24px">'+(i+1)+'.</span>'+
+           '<span class="gd-val">'+escHtml(it.n)+(it.v?' ['+escHtml(it.v)+' RU]':'')+'</span></div>';
+    });
+  }
+  if(d['f-notatki']){
+    h += '<hr style="border:none;border-top:1px solid var(--bd2);margin:8px 0">';
+    h += '<div class="gd-sec">NOTATKI</div>';
+    h += '<div style="font-size:11px;color:var(--t1);white-space:pre-wrap;line-height:1.6">'+escHtml(d['f-notatki'])+'</div>';
+  }
+  return h;
+}
+
+function gmTimeAgo(ts) {
+  if (!ts || !ts.seconds) return '';
+  var diff = Math.round((Date.now()/1000) - ts.seconds);
+  if (diff < 60) return diff + 's temu';
+  if (diff < 3600) return Math.round(diff/60) + 'min temu';
+  if (diff < 86400) return Math.round(diff/3600) + 'h temu';
+  return Math.round(diff/86400) + 'd temu';
+}
+
+function escHtml(s) {
+  var d = document.createElement('div'); d.textContent = String(s||''); return d.innerHTML;
+}
+
+/* ─── ADMIN PANEL ────────────────────────────── */
+var admCharsLoaded = false;
+var admRosterData  = [];
+var admLogsRaw     = [];
+
+function showAdminTab(name) {
+  ['chars','logs','users'].forEach(function(t){
+    document.getElementById('adm-'+t).style.display = t===name?'block':'none';
+  });
+  document.querySelectorAll('.adm-tab').forEach(function(el,i){
+    el.classList.toggle('active', ['chars','logs','users'][i]===name);
+  });
+  if(name==='logs'  && !admLogsRaw.length)  admLoadLogs();
+  if(name==='users')                         admLoadUsers();
+}
+
+function admLoadRoster() {
+  if(!fbDB||!fbUser) return;
+  fbDB.collection('roster').orderBy('pseudonim').get().then(function(snap){
+    admRosterData = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+    admRenderRoster();
+    admCharsLoaded = true;
+  }).catch(function(e){ document.getElementById('adm-char-status').textContent='Błąd: '+e.message; });
+}
+
+function admRenderRoster() {
+  var tbody = document.getElementById('adm-char-tbody');
+  tbody.innerHTML = '';
+  admRosterData.forEach(function(c){
+    var tr = document.createElement('tr'); tr.className = 'adm-tr';
+    var ago = gmTimeAgo(c.lastModified);
+    var pzBar = c.maxPz>0
+      ? '<div style="width:40px;height:4px;background:var(--g1);display:inline-block;vertical-align:middle">'
+        +'<div style="width:'+Math.min(100,Math.round(c.pz/c.maxPz*100))+'%;height:100%;background:var(--g2)"></div></div> '+c.pz+'/'+c.maxPz
+      : c.pz+'/'+c.maxPz;
+    tr.innerHTML =
+      '<td style="color:var(--g3)">'+escHtml(c.pseudonim||'???')+'</td>'+
+      '<td>'+escHtml(c.frakcja||'—')+'</td>'+
+      '<td style="font-size:10px;color:var(--t0)">'+escHtml(c.nick||'?')+'</td>'+
+      '<td>'+pzBar+'</td>'+
+      '<td style="color:'+(c.rad>=7?'var(--r3)':c.rad>=4?'var(--a3)':'var(--t2)')+'">'+c.rad+'</td>'+
+      '<td style="font-size:10px;color:var(--t0)">'+ago+'</td>'+
+      '<td><button class="btn btn-red" style="padding:2px 6px;font-size:9px" onclick="admDeleteChar(\''+c.id+'\')">Usuń</button></td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function admDeleteChar(charId) {
+  if(!confirm('Usunąć postać z rostera?')) return;
+  fbDB.collection('roster').doc(charId).delete().then(function(){
+    admRosterData = admRosterData.filter(function(c){ return c.id!==charId; });
+    admRenderRoster();
+  });
+}
+
+function admExportJSON() {
+  if(!admRosterData.length){ return; }
+  var payload = { exported: new Date().toISOString(), version: 'strefa-v1', characters: admRosterData };
+  var blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'strefa-backup-' + new Date().toISOString().slice(0,10) + '.json';
+  a.click();
+}
+
+function admImportJSON(input) {
+  var file = input.files[0]; input.value = '';
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e) {
+    var payload; try{ payload = JSON.parse(e.target.result); } catch(err){ alert('Błędny JSON'); return; }
+    if(!payload.characters || !Array.isArray(payload.characters)){ alert('Błędny format'); return; }
+    if(!confirm('Importować '+payload.characters.length+' postaci?')) return;
+    var batch = fbDB.batch();
+    payload.characters.forEach(function(c){
+      if(!c.id||!c.charData) return;
+      batch.set(fbDB.collection('roster').doc(c.id), {
+        uid: c.uid||'import', nick: c.nick||'', pseudonim: c.pseudonim||'?',
+        frakcja: c.frakcja||'', pz: c.pz||0, maxPz: c.maxPz||5,
+        rad: c.rad||0, stres: c.stres||0, charData: c.charData,
+        lastModified: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+    batch.commit().then(function(){ admLoadRoster(); });
+  };
+  reader.readAsText(file);
+}
+
+function admLoadLogs() {
+  if(!fbDB) return;
+  document.getElementById('adm-log-status').textContent = 'Wczytywanie...';
+  fbDB.collection('logs').orderBy('timestamp','desc').limit(200).get().then(function(snap){
+    admLogsRaw = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+    admRenderLogs(admLogsRaw);
+    document.getElementById('adm-log-status').textContent = '';
+  }).catch(function(e){ document.getElementById('adm-log-status').textContent = 'Błąd: '+e.message; });
+}
+
+function admFilterLogs() {
+  var s = document.getElementById('adm-log-search').value.toLowerCase();
+  var a = document.getElementById('adm-log-filter').value;
+  admRenderLogs(admLogsRaw.filter(function(l){
+    return (!s||(l.nick||'').toLowerCase().indexOf(s)>=0) && (!a||l.action===a);
+  }));
+}
+
+function admRenderLogs(logs) {
+  var tbody = document.getElementById('adm-log-tbody');
+  tbody.innerHTML = '';
+  logs.forEach(function(l){
+    var tr = document.createElement('tr'); tr.className = 'adm-tr';
+    var ts = l.timestamp&&l.timestamp.seconds
+      ? new Date(l.timestamp.seconds*1000).toLocaleString('pl-PL',{hour12:false}) : '—';
+    var col = {login:'var(--g2)',save:'var(--t2)',delete:'var(--r3)',error:'var(--r3)'}[l.action]||'var(--t0)';
+    var det = JSON.stringify(l.details||{}).replace(/[{}"]/g,'').substring(0,60);
+    tr.innerHTML =
+      '<td style="font-size:10px;color:var(--t0)">'+ts+'</td>'+
+      '<td style="color:'+col+'">'+escHtml(l.action||'?')+'</td>'+
+      '<td>'+escHtml(l.nick||'?')+'</td>'+
+      '<td style="font-size:10px;color:var(--t0)">'+escHtml(det)+'</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+function admCleanLogs() {
+  if(!fbDB||!confirm('Usunąć logi starsze niż 7 dni?')) return;
+  var cutoff = new Date(); cutoff.setDate(cutoff.getDate()-7);
+  var ts = firebase.firestore.Timestamp.fromDate(cutoff);
+  fbDB.collection('logs').where('timestamp','<',ts).get().then(function(snap){
+    if(!snap.docs.length){ document.getElementById('adm-log-status').textContent='Brak starych logów'; return; }
+    var batch=fbDB.batch(); snap.docs.forEach(function(d){batch.delete(d.ref);});
+    batch.commit().then(function(){ admLoadLogs(); });
+  });
+}
+
+function admDeleteAllLogs() {
+  if(!fbDB||!confirm('Usunąć WSZYSTKIE logi?')||!confirm('Na pewno?')) return;
+  fbDB.collection('logs').get().then(function(snap){
+    var b=fbDB.batch(); snap.docs.forEach(function(d){b.delete(d.ref);});
+    b.commit().then(function(){ admLogsRaw=[]; admRenderLogs([]); });
+  });
+}
+
+/* ── User management ── */
+function admLoadUsers() {
+  if(!fbDB) return;
+  document.getElementById('adm-user-status').textContent = 'Wczytywanie...';
+  // Read all users from /users/ collection + their roles
+  fbDB.collection('users').get().then(function(usersSnap){
+    var users = usersSnap.docs.map(function(d){ return Object.assign({uid:d.id}, d.data()); });
+    // Load all roles
+    fbDB.collection('roles').get().then(function(rolesSnap){
+      var roles = {};
+      rolesSnap.docs.forEach(function(d){ roles[d.id]=d.data(); });
+      admRenderUsers(users, roles);
+      document.getElementById('adm-user-status').textContent = '';
+    }).catch(function(){
+      admRenderUsers(users, {});
+      document.getElementById('adm-user-status').textContent = '';
+    });
+  }).catch(function(e){ document.getElementById('adm-user-status').textContent='Błąd: '+e.message; });
+}
+
+function admRenderUsers(users, roles) {
+  var list = document.getElementById('adm-user-list');
+  list.innerHTML = '';
+  if(!users.length){ list.innerHTML='<p style="color:var(--t0);font-size:11px">Brak zarejestrowanych użytkowników.</p>'; return; }
+  users.forEach(function(u){
+    var role = roles[u.uid] || { gm: false, admin: false };
+    var isAdmin = u.uid === ADMIN_UID;
+    var div = document.createElement('div'); div.className = 'user-role-card';
+    div.innerHTML =
+      (u.photoURL ? '<img src="'+u.photoURL+'" style="width:32px;height:32px;border-radius:50%;border:1px solid var(--g1)">' : '<span style="font-size:20px">&#128100;</span>') +
+      '<span class="unick">' + escHtml(u.nick||u.displayName||'?') + (isAdmin?'  <span style="color:var(--r3);font-size:9px">[ADMIN]</span>':'') + '</span>' +
+      '<span class="uemail">' + escHtml(u.email||u.uid) + '</span>' +
+      (isAdmin ? '<span style="font-size:10px;color:var(--t0)">Stałe uprawnienia (hardcoded)</span>' :
+        '<label class="role-toggle"><input type="checkbox" '+(role.gm?'checked':'')+' onchange="admSetRole(\''+u.uid+'\',\'gm\',this.checked)"> GM</label>' +
+        '<label class="role-toggle admin-role"><input type="checkbox" '+(role.admin?'checked':'')+' onchange="admSetRole(\''+u.uid+'\',\'admin\',this.checked)"> Admin</label>'
+      );
+    list.appendChild(div);
+  });
+}
+
+function admSetRole(uid, roleKey, value) {
+  if(!fbDB) return;
+  var update = {};
+  update[roleKey] = value;
+  fbDB.collection('roles').doc(uid).set(update, {merge:true})
+    .then(function(){ document.getElementById('adm-user-status').textContent='Zapisano'; setTimeout(function(){document.getElementById('adm-user-status').textContent='';},2000); })
+    .catch(function(e){ alert('Błąd zapisu roli: '+e.message); });
+}
+
 function init() {
   buildAttrs();
   for (var i=0;i<SKILL_IDS.length;i++) buildSkillCircles('sk-'+SKILL_IDS[i]);
@@ -1912,6 +2380,105 @@ document.addEventListener('DOMContentLoaded', init);
   </div>
 </div>
 
+
+
+<!-- ── GM SECTION ─────────────────────────────── -->
+<div id="gm-section" style="display:none;padding:14px;max-width:1100px;margin:0 auto">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap">
+    <span style="font-size:11px;letter-spacing:2px;color:var(--g2)">ROSTER</span>
+    <span id="gm-count" style="font-size:10px;color:var(--t0)"></span>
+    <span style="flex:1"></span>
+    <button class="btn" onclick="gmLoadRoster()">&#8635; Odśwież</button>
+  </div>
+  <div id="gm-roster-grid" style="display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:12px"></div>
+</div>
+
+<!-- ── ADMIN SECTION ───────────────────────────── -->
+<div id="admin-section" style="display:none">
+  <div id="admin-tabs-bar" style="display:flex;border-bottom:1px solid var(--bd2);background:var(--bg2)">
+    <div class="adm-tab active" onclick="showAdminTab('chars')">&#128101; POSTACIE</div>
+    <div class="adm-tab"       onclick="showAdminTab('logs')">&#128196; LOGI</div>
+    <div class="adm-tab"       onclick="showAdminTab('users')">&#128273; UŻYTKOWNICY</div>
+  </div>
+  <div style="padding:14px;max-width:1100px;margin:0 auto">
+
+    <!-- Postacie -->
+    <div id="adm-chars" style="display:block">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+        <button class="btn" onclick="admLoadRoster()">&#8635; Odśwież</button>
+        <button class="btn" onclick="admExportJSON()">&#8595; Eksport JSON</button>
+        <label style="cursor:pointer;border:1px solid var(--g1);color:var(--t1);padding:4px 10px;font-size:10px;letter-spacing:1px">
+          &#8593; Import JSON<input type="file" id="adm-import-file" accept=".json" style="display:none" onchange="admImportJSON(this)">
+        </label>
+        <span id="adm-char-status" style="font-size:10px;color:var(--g3)"></span>
+      </div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;font-size:10px;color:var(--t0);padding:4px 8px;border-bottom:1px solid var(--bd2)">Postać</th>
+          <th style="text-align:left;font-size:10px;color:var(--t0);padding:4px 8px;border-bottom:1px solid var(--bd2)">Frakcja</th>
+          <th style="text-align:left;font-size:10px;color:var(--t0);padding:4px 8px;border-bottom:1px solid var(--bd2)">Gracz</th>
+          <th style="text-align:left;font-size:10px;color:var(--t0);padding:4px 8px;border-bottom:1px solid var(--bd2)">PZ</th>
+          <th style="text-align:left;font-size:10px;color:var(--t0);padding:4px 8px;border-bottom:1px solid var(--bd2)">RAD</th>
+          <th style="text-align:left;font-size:10px;color:var(--t0);padding:4px 8px;border-bottom:1px solid var(--bd2)">Ostatnio</th>
+          <th style="padding:4px 8px;border-bottom:1px solid var(--bd2)"></th>
+        </tr></thead>
+        <tbody id="adm-char-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Logi -->
+    <div id="adm-logs" style="display:none">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
+        <button class="btn btn-amber" onclick="admCleanLogs()">&#128465; Wyczyść >7d</button>
+        <button class="btn btn-red"   onclick="admDeleteAllLogs()">&#128465; Wyczyść WSZYSTKO</button>
+        <button class="btn"           onclick="admLoadLogs()">&#8635; Odśwież</button>
+        <span id="adm-log-status" style="font-size:10px;color:var(--g3)"></span>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+        <input id="adm-log-search" placeholder="Szukaj gracza..." oninput="admFilterLogs()"
+          style="background:var(--bg);border:1px solid var(--bd2);color:var(--t2);font-family:'Share Tech Mono',monospace;font-size:11px;padding:4px 8px">
+        <select id="adm-log-filter" onchange="admFilterLogs()"
+          style="background:var(--bg);border:1px solid var(--bd2);color:var(--t2);font-family:'Share Tech Mono',monospace;font-size:11px;padding:4px 8px">
+          <option value="">Wszystkie</option>
+          <option value="login">login</option>
+          <option value="save">save</option>
+          <option value="delete">delete</option>
+          <option value="error">error</option>
+        </select>
+      </div>
+      <table style="width:100%;border-collapse:collapse">
+        <thead><tr>
+          <th style="text-align:left;font-size:10px;color:var(--t0);padding:4px 8px;border-bottom:1px solid var(--bd2)">Czas</th>
+          <th style="text-align:left;font-size:10px;color:var(--t0);padding:4px 8px;border-bottom:1px solid var(--bd2)">Akcja</th>
+          <th style="text-align:left;font-size:10px;color:var(--t0);padding:4px 8px;border-bottom:1px solid var(--bd2)">Gracz</th>
+          <th style="text-align:left;font-size:10px;color:var(--t0);padding:4px 8px;border-bottom:1px solid var(--bd2)">Szczegóły</th>
+        </tr></thead>
+        <tbody id="adm-log-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- Użytkownicy -->
+    <div id="adm-users" style="display:none">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+        <button class="btn" onclick="admLoadUsers()">&#8635; Odśwież</button>
+        <span id="adm-user-status" style="font-size:10px;color:var(--g3)"></span>
+      </div>
+      <p style="font-size:10px;color:var(--t0);margin-bottom:10px">
+        Zaznacz GM aby gracz widział panel GM. Zaznacz Admin aby widział panel Admin.
+      </p>
+      <div id="adm-user-list"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- GM detail modal -->
+<div class="modal-overlay" id="gm-detail-modal" onclick="gmCloseDetail(event)">
+  <div class="modal-box" style="max-width:680px">
+    <button class="modal-close-btn" onclick="gmCloseDetailBtn()">&#x2715; Zamknij</button>
+    <div id="gm-detail-content"></div>
+  </div>
+</div>
 
 <!-- Reset confirm modal -->
 <div class="modal-overlay" id="reset-modal">
