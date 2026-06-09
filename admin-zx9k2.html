@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>STREFA — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080b06;--bg2:#0d120a;--bg3:#111a0d;
+  --g1:#2a4a1a;--g2:#62a848;--g3:#9dd67a;
+  --t0:#4a6a34;--t1:#7a9a60;--t2:#bdd4a8;
+  --r1:#4a1a1a;--r2:#aa3333;--r3:#ff6666;
+  --a1:#4a3a10;--a2:#c08020;--a3:#e8c060;
+  --bd2:#324824;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;outline:none;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--t2);font-family:'Share Tech Mono',monospace;font-size:12px;min-height:100vh}
+
+#topbar{
+  background:var(--bg2);border-bottom:2px solid var(--r2);
+  padding:8px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+  position:sticky;top:0;z-index:100;
+}
+.logo{color:var(--r3);font-size:13px;letter-spacing:3px;font-weight:bold}
+.sub{color:var(--t0);font-size:10px;letter-spacing:2px}
+.spacer{flex:1}
+.btn{background:none;border:1px solid var(--g1);color:var(--t1);font-family:'Share Tech Mono',monospace;
+  font-size:10px;padding:4px 10px;cursor:pointer;letter-spacing:1px;transition:.2s}
+.btn:hover{border-color:var(--g2);color:var(--g3)}
+.btn-red{border-color:var(--r1);color:var(--r2)}
+.btn-red:hover{border-color:var(--r2);color:var(--r3)}
+.btn-amber{border-color:var(--a1);color:var(--a2)}
+.btn-amber:hover{border-color:var(--a2);color:var(--a3)}
+
+/* tabs */
+#tabs{display:flex;border-bottom:1px solid var(--bd2);background:var(--bg2)}
+.tab{padding:8px 18px;cursor:pointer;font-size:11px;letter-spacing:1px;color:var(--t0);
+  border-bottom:2px solid transparent;transition:.2s}
+.tab:hover{color:var(--t2)}
+.tab.active{color:var(--g3);border-bottom-color:var(--g2)}
+
+#content{padding:14px;max-width:1100px;margin:0 auto}
+#login-wall{text-align:center;padding:80px 20px;color:var(--t0)}
+#login-wall b{color:var(--t2)}
+
+/* section */
+.section-hdr{
+  font-size:11px;letter-spacing:2px;color:var(--g2);
+  border-bottom:1px solid var(--bd2);padding-bottom:6px;margin-bottom:12px;
+  display:flex;align-items:center;gap:10px;
+}
+.section-hdr .count{font-size:10px;color:var(--t0)}
+.action-row{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px;align-items:center}
+.status-msg{font-size:10px;padding:4px 8px;border-left:2px solid var(--g2);color:var(--g3)}
+.status-msg.err{border-color:var(--r2);color:var(--r3)}
+.status-msg.warn{border-color:var(--a2);color:var(--a3)}
+
+/* table */
+.tbl{width:100%;border-collapse:collapse;margin-bottom:14px}
+.tbl th{text-align:left;font-size:10px;color:var(--t0);letter-spacing:1px;
+  padding:4px 8px;border-bottom:1px solid var(--bd2)}
+.tbl td{padding:5px 8px;border-bottom:1px solid var(--g1);font-size:11px;vertical-align:top}
+.tbl tr:hover td{background:var(--bg3)}
+.tbl .mono{color:var(--t0);font-size:10px}
+.tbl .name{color:var(--g3)}
+.tbl .action-login{color:var(--g2)}
+.tbl .action-save{color:var(--t2)}
+.tbl .action-delete{color:var(--r3)}
+.tbl .action-error{color:var(--r3)}
+.tbl .action-other{color:var(--t0)}
+
+/* filter row */
+.filter-row{display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.filter-inp{background:var(--bg);border:1px solid var(--bd2);color:var(--t2);
+  font-family:'Share Tech Mono',monospace;font-size:11px;padding:4px 8px}
+.filter-inp:focus{border-color:var(--g2)}
+select.filter-inp option{background:var(--bg2)}
+
+/* file input */
+input[type=file]{display:none}
+.file-label{cursor:pointer;border:1px solid var(--g1);color:var(--t1);
+  padding:4px 10px;font-size:10px;letter-spacing:1px;transition:.2s}
+.file-label:hover{border-color:var(--g2);color:var(--g3)}
+
+/* char detail expand */
+.char-row-detail{display:none;background:var(--bg3);padding:8px 12px;
+  font-size:10px;color:var(--t0);line-height:1.8;white-space:pre-wrap}
+.char-row-detail.open{display:block}
+
+/* log detail */
+.log-detail{font-size:10px;color:var(--t0)}
+
+@media(max-width:600px){
+  .tbl th:nth-child(n+4),.tbl td:nth-child(n+4){display:none}
+  #tabs .tab{padding:8px 10px;font-size:10px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ CONFIG ══════════════════════════════════════════
+  1. Wklej FIREBASE_CONFIG (te same dane co w index.html)
+  2. Wpisz swoj UID Firebase w ADMIN_UID
+     (znajdziesz go w: Firebase Console -> Authentication
+      -> Users -> skopiuj UID przy swoim koncie)
+  ═══════════════════════════════════════════════════════ -->
+<script>
+var FIREBASE_CONFIG = {
+  apiKey:            "BRAK",
+  authDomain:        "BRAK",
+  projectId:         "BRAK",
+  storageBucket:     "BRAK",
+  messagingSenderId: "BRAK",
+  appId:             "BRAK"
+};
+var ADMIN_UID = "BRAK"; // Twoj Firebase UID
+var LOG_TTL_DAYS = 7;   // Logi starsze niz X dni sa kasowane automatycznie
+</script>
+
+<div id="topbar">
+  <div><div class="logo">&#9888; STREFA ADMIN</div><div class="sub">PANEL ADMINISTRACYJNY</div></div>
+  <span class="spacer"></span>
+  <span id="login-info" style="font-size:10px;color:var(--t0)"></span>
+  <button class="btn" id="btn-login" onclick="loginGoogle()" style="display:none">Zaloguj Google</button>
+  <button class="btn btn-red" id="btn-logout" onclick="logoutUser()" style="display:none">Wyloguj</button>
+</div>
+
+<div id="login-wall" style="display:none">
+  <div style="font-size:20px;color:var(--r3);margin-bottom:12px">&#9888;</div>
+  <div id="wall-msg">Zaloguj sie aby uzyskac dostep.</div>
+  <br>
+  <button class="btn" onclick="loginGoogle()">Zaloguj przez Google</button>
+</div>
+
+<div id="main" style="display:none">
+  <div id="tabs">
+    <div class="tab active" onclick="showTab('postacie')">&#128101; POSTACIE</div>
+    <div class="tab" onclick="showTab('logi')">&#128196; LOGI</div>
+  </div>
+
+  <div id="content">
+    <!-- ── POSTACIE ── -->
+    <div id="tab-postacie">
+      <div class="action-row">
+        <button class="btn" onclick="exportAllJSON()">&#8595; Eksport JSON</button>
+        <label class="file-label">&#8593; Import JSON<input type="file" id="import-file" accept=".json" onchange="importJSON(this)"></label>
+        <button class="btn" onclick="loadRoster()">&#8635; Odśwież</button>
+        <span id="char-status"></span>
+      </div>
+      <div class="section-hdr">
+        ROSTER <span class="count" id="char-count"></span>
+      </div>
+      <table class="tbl" id="char-table">
+        <thead><tr>
+          <th>Postać</th><th>Frakcja</th><th>Gracz</th>
+          <th>PZ</th><th>RAD</th><th>STRES</th>
+          <th>Ostatnio</th><th></th>
+        </tr></thead>
+        <tbody id="char-tbody"></tbody>
+      </table>
+    </div>
+
+    <!-- ── LOGI ── -->
+    <div id="tab-logi" style="display:none">
+      <div class="action-row">
+        <button class="btn btn-amber" onclick="cleanOldLogs()">&#128465; Wyczyść >{{TTL}}d</button>
+        <button class="btn btn-red" onclick="deleteAllLogs()">&#128465; Wyczyść WSZYSTKO</button>
+        <button class="btn" onclick="loadLogs()">&#8635; Odśwież</button>
+        <span id="log-status"></span>
+      </div>
+      <div class="filter-row">
+        <input class="filter-inp" id="log-search" placeholder="Szukaj gracza..." oninput="filterLogs()">
+        <select class="filter-inp" id="log-action-filter" onchange="filterLogs()">
+          <option value="">Wszystkie akcje</option>
+          <option value="login">login</option>
+          <option value="save">save</option>
+          <option value="delete">delete</option>
+          <option value="error">error</option>
+        </select>
+      </div>
+      <div class="section-hdr">
+        LOGI <span class="count" id="log-count"></span>
+        <span style="font-size:9px;color:var(--t0);margin-left:8px">auto-kasowanie po {{TTL}} dniach</span>
+      </div>
+      <table class="tbl" id="log-table">
+        <thead><tr>
+          <th>Czas</th><th>Akcja</th><th>Gracz</th><th>Szczegóły</th>
+        </tr></thead>
+        <tbody id="log-tbody"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// replace {{TTL}} with actual value
+document.body.innerHTML = document.body.innerHTML.replace(/\{\{TTL\}\}/g, LOG_TTL_DAYS);
+
+var fbUser=null, fbDB=null;
+var rosterRaw=[], logsRaw=[];
+
+/* ── Firebase init ── */
+function initFirebase(){
+  if(FIREBASE_CONFIG.apiKey==='BRAK'){
+    document.getElementById('login-wall').style.display='';
+    document.getElementById('wall-msg').innerHTML=
+      '<b style="color:var(--r3)">Uzupelnij FIREBASE_CONFIG i ADMIN_UID w pliku!</b>';
+    return;
+  }
+  loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js', function(){
+  loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js', function(){
+  loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js', function(){
+    firebase.initializeApp(FIREBASE_CONFIG);
+    fbDB = firebase.firestore();
+    firebase.auth().onAuthStateChanged(function(user){
+      fbUser = user;
+      if(!user){
+        showLoginWall('Zaloguj sie aby uzyskac dostep.');
+        return;
+      }
+      if(ADMIN_UID !== 'BRAK' && user.uid !== ADMIN_UID){
+        showLoginWall('<span style="color:var(--r3)">&#9888; Brak uprawnien administratora.</span><br><small>'+user.email+'</small>');
+        document.getElementById('btn-logout').style.display='';
+        document.getElementById('login-info').textContent=user.displayName||user.email;
+        return;
+      }
+      document.getElementById('login-wall').style.display='none';
+      document.getElementById('main').style.display='';
+      document.getElementById('login-info').textContent=(user.displayName||user.email)+' [ADMIN]';
+      document.getElementById('btn-logout').style.display='';
+      document.getElementById('btn-login').style.display='none';
+      loadRoster();
+      autoCleanLogs(); // silent cleanup on load
+    });
+  });});});
+}
+
+function loadScript(src, cb){
+  var s=document.createElement('script'); s.src=src; s.onload=cb; document.head.appendChild(s);
+}
+function loginGoogle(){
+  firebase.auth().signInWithPopup(new firebase.auth.GoogleAuthProvider()).catch(function(e){alert(e.message);});
+}
+function logoutUser(){
+  firebase.auth().signOut();
+  document.getElementById('main').style.display='none';
+  document.getElementById('btn-logout').style.display='none';
+  showLoginWall('Zaloguj sie aby uzyskac dostep.');
+}
+function showLoginWall(msg){
+  document.getElementById('login-wall').style.display='';
+  document.getElementById('wall-msg').innerHTML=msg;
+  document.getElementById('btn-login').style.display='';
+}
+
+/* ── Tabs ── */
+function showTab(name){
+  ['postacie','logi'].forEach(function(t){
+    document.getElementById('tab-'+t).style.display = t===name?'':'none';
+  });
+  document.querySelectorAll('.tab').forEach(function(el,i){
+    el.classList.toggle('active', ['postacie','logi'][i]===name);
+  });
+  if(name==='logi' && !logsRaw.length) loadLogs();
+}
+
+/* ══════════════════════════════════════════════
+   POSTACIE
+   ══════════════════════════════════════════════ */
+function loadRoster(){
+  if(!fbDB) return;
+  setStatus('char-status','Wczytywanie...','');
+  fbDB.collection('roster').orderBy('pseudonim').get().then(function(snap){
+    rosterRaw = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+    renderRoster();
+    setStatus('char-status','','');
+  }).catch(function(e){ setStatus('char-status','Blad: '+e.message,'err'); });
+}
+
+function renderRoster(){
+  var tbody = document.getElementById('char-tbody');
+  document.getElementById('char-count').textContent = '('+rosterRaw.length+')';
+  tbody.innerHTML='';
+  rosterRaw.forEach(function(c){
+    var tr=document.createElement('tr');
+    var ago=timeAgo(c.lastModified);
+    var pzBar = c.maxPz>0
+      ? '<div style="width:40px;height:4px;background:var(--g1);display:inline-block;vertical-align:middle">'+
+        '<div style="width:'+Math.min(100,Math.round(c.pz/c.maxPz*100))+'%;height:100%;background:var(--g2)"></div></div> '+c.pz+'/'+c.maxPz
+      : c.pz+'/'+c.maxPz;
+    var portThumb = (c.charData&&c.charData.portrait)
+      ? '<img src="'+c.charData.portrait+'" style="width:28px;height:28px;object-fit:cover;border:1px solid var(--g1);vertical-align:middle;margin-right:6px">'
+      : '<span style="display:inline-block;width:28px;height:28px;border:1px solid var(--g1);vertical-align:middle;margin-right:6px;text-align:center;line-height:28px;font-size:12px;color:var(--t0)">&#128100;</span>';
+    tr.innerHTML=
+      '<td class="name" style="cursor:pointer" onclick="toggleDetail(\''+c.id+'\')">'+portThumb+esc(c.pseudonim||'???')+'</td>'+
+      '<td>'+esc(c.frakcja||'—')+'</td>'+
+      '<td class="mono">'+esc(c.nick||'?')+'</td>'+
+      '<td>'+pzBar+'</td>'+
+      '<td style="color:'+(c.rad>=7?'var(--r3)':c.rad>=4?'var(--a3)':'var(--t2)')+'">'+c.rad+'</td>'+
+      '<td style="color:'+(c.stres>=5?'var(--r3)':c.stres>=3?'var(--a3)':'var(--t2)')+'">'+c.stres+'</td>'+
+      '<td class="mono">'+ago+'</td>'+
+      '<td><button class="btn btn-red" style="padding:2px 6px;font-size:9px" onclick="deleteChar(\''+c.id+'\')">Usuń</button></td>';
+    tbody.appendChild(tr);
+    // expandable detail row
+    var det=document.createElement('tr');
+    var td=document.createElement('td');
+    td.colSpan=8; td.style.padding='0';
+    var detDiv=document.createElement('div');
+    detDiv.className='char-row-detail'; detDiv.id='det-'+c.id;
+    detDiv.textContent=buildCharSummary(c);
+    td.appendChild(detDiv); det.appendChild(td);
+    tbody.appendChild(det);
+  });
+}
+
+function toggleDetail(id){
+  var el=document.getElementById('det-'+id);
+  if(el) el.classList.toggle('open');
+}
+
+function buildCharSummary(c){
+  var d=c.charData||{};
+  var attrs=d.attrs||{};
+  var lines=[];
+  lines.push('UID: '+c.uid);
+  lines.push('ID:  '+c.id);
+  lines.push('WYR:'+((attrs.wyr||0))+' ZRC:'+((attrs.zrc||0))+' PER:'+((attrs.per||0))+' UMY:'+((attrs.umy||0))+' CHA:'+((attrs.cha||0)));
+  var sk=d.skills||{};
+  var skParts=[];
+  Object.keys(sk).forEach(function(k){ if(parseInt(sk[k])>0) skParts.push(k+':'+sk[k]); });
+  if(skParts.length) lines.push('Skills: '+skParts.join(' '));
+  if(d['f-bron-g']) lines.push('Bron G: '+d['f-bron-g']);
+  if(d['f-pancerz']) lines.push('Pancerz: '+d['f-pancerz']);
+  if(d['f-notatki']) lines.push('Notatki: '+d['f-notatki'].substring(0,80)+'...');
+  return lines.join('\n');
+}
+
+function deleteChar(charId){
+  if(!confirm('Usunac postac z rostera? (karta gracza pozostaje w jego koncie)')) return;
+  fbDB.collection('roster').doc(charId).delete().then(function(){
+    rosterRaw = rosterRaw.filter(function(c){ return c.id!==charId; });
+    renderRoster();
+    setStatus('char-status','Usunieto','');
+  }).catch(function(e){ setStatus('char-status','Blad: '+e.message,'err'); });
+}
+
+/* ── Export JSON ── */
+function exportAllJSON(){
+  if(!rosterRaw.length){ setStatus('char-status','Brak danych','warn'); return; }
+  var payload = {
+    exported: new Date().toISOString(),
+    version:  'strefa-admin-v1',
+    count:    rosterRaw.length,
+    characters: rosterRaw.map(function(c){
+      return {
+        id: c.id, uid: c.uid, nick: c.nick||'',
+        pseudonim: c.pseudonim||'', frakcja: c.frakcja||'',
+        pz: c.pz, maxPz: c.maxPz, rad: c.rad, stres: c.stres,
+        charData: c.charData||{}
+      };
+    })
+  };
+  var blob = new Blob([JSON.stringify(payload,null,2)], {type:'application/json'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'strefa-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click();
+  setStatus('char-status','Eksport: '+rosterRaw.length+' postaci','');
+}
+
+/* ── Import JSON ── */
+function importJSON(input){
+  var file = input.files[0]; if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var payload;
+    try{ payload = JSON.parse(e.target.result); }
+    catch(err){ setStatus('char-status','Bledny JSON: '+err.message,'err'); return; }
+    if(!payload.characters || !Array.isArray(payload.characters)){
+      setStatus('char-status','Bledny format pliku','err'); return;
+    }
+    if(!confirm('Importowac '+payload.characters.length+' postaci do rostera?\n(Nadpisze istniejace o tym samym ID)')) return;
+    var batch = fbDB.batch();
+    payload.characters.forEach(function(c){
+      if(!c.id || !c.charData) return;
+      var ref = fbDB.collection('roster').doc(c.id);
+      batch.set(ref, {
+        uid:      c.uid||'import',
+        nick:     c.nick||'',
+        pseudonim: c.pseudonim||'?',
+        frakcja:  c.frakcja||'',
+        pz:       c.pz||0, maxPz: c.maxPz||5,
+        rad:      c.rad||0, stres: c.stres||0,
+        charData: c.charData,
+        lastModified: firebase.firestore.FieldValue.serverTimestamp()
+      });
+    });
+    batch.commit().then(function(){
+      setStatus('char-status','Zaimportowano: '+payload.characters.length+' postaci','');
+      loadRoster();
+    }).catch(function(err){ setStatus('char-status','Blad importu: '+err.message,'err'); });
+  };
+  reader.readAsText(file);
+  input.value='';
+}
+
+/* ══════════════════════════════════════════════
+   LOGI
+   ══════════════════════════════════════════════ */
+function loadLogs(){
+  if(!fbDB) return;
+  setStatus('log-status','Wczytywanie...','');
+  fbDB.collection('logs').orderBy('timestamp','desc').limit(200).get()
+    .then(function(snap){
+      logsRaw = snap.docs.map(function(d){ return Object.assign({id:d.id}, d.data()); });
+      renderLogs(logsRaw);
+      setStatus('log-status','','');
+    }).catch(function(e){ setStatus('log-status','Blad: '+e.message,'err'); });
+}
+
+function filterLogs(){
+  var search = document.getElementById('log-search').value.toLowerCase();
+  var action = document.getElementById('log-action-filter').value;
+  var filtered = logsRaw.filter(function(l){
+    var matchNick = !search || (l.nick||'').toLowerCase().indexOf(search)>=0;
+    var matchAction = !action || l.action===action;
+    return matchNick && matchAction;
+  });
+  renderLogs(filtered);
+}
+
+function renderLogs(logs){
+  var tbody = document.getElementById('log-tbody');
+  document.getElementById('log-count').textContent = '('+logs.length+')';
+  tbody.innerHTML='';
+  logs.forEach(function(l){
+    var tr=document.createElement('tr');
+    var ts = l.timestamp&&l.timestamp.seconds
+      ? new Date(l.timestamp.seconds*1000).toLocaleString('pl-PL',{hour12:false})
+      : '—';
+    var det = JSON.stringify(l.details||{}).replace(/[{}\"]/g,'').substring(0,60);
+    tr.innerHTML=
+      '<td class="mono">'+ts+'</td>'+
+      '<td class="action-'+l.action+'">'+esc(l.action||'?')+'</td>'+
+      '<td>'+esc(l.nick||'?')+'</td>'+
+      '<td class="log-detail">'+esc(det)+'</td>';
+    tbody.appendChild(tr);
+  });
+}
+
+/* ── Auto-clean on load (silent) ── */
+function autoCleanLogs(){
+  if(!fbDB) return;
+  var cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - LOG_TTL_DAYS);
+  var ts = firebase.firestore.Timestamp.fromDate(cutoff);
+  fbDB.collection('logs').where('timestamp','<',ts).get().then(function(snap){
+    if(!snap.docs.length) return;
+    var batch = fbDB.batch();
+    snap.docs.forEach(function(d){ batch.delete(d.ref); });
+    batch.commit().then(function(){
+      console.log('Auto-cleaned '+snap.docs.length+' old logs');
+    });
+  }).catch(function(){});
+}
+
+/* ── Manual: clean old logs ── */
+function cleanOldLogs(){
+  if(!confirm('Usunac logi starsze niz '+LOG_TTL_DAYS+' dni?')) return;
+  var cutoff = new Date();
+  cutoff.setDate(cutoff.getDate() - LOG_TTL_DAYS);
+  var ts = firebase.firestore.Timestamp.fromDate(cutoff);
+  setStatus('log-status','Czyszczenie...','');
+  fbDB.collection('logs').where('timestamp','<',ts).get().then(function(snap){
+    if(!snap.docs.length){ setStatus('log-status','Brak starych logow',''); return; }
+    var batch = fbDB.batch();
+    snap.docs.forEach(function(d){ batch.delete(d.ref); });
+    return batch.commit().then(function(){
+      setStatus('log-status','Usunieto: '+snap.docs.length+' logow','');
+      loadLogs();
+    });
+  }).catch(function(e){ setStatus('log-status','Blad: '+e.message,'err'); });
+}
+
+/* ── Delete ALL logs ── */
+function deleteAllLogs(){
+  if(!confirm('UWAGA: Usunac WSZYSTKIE logi bezpowrotnie?')) return;
+  if(!confirm('Na pewno? Tej operacji nie mozna cofnac.')) return;
+  setStatus('log-status','Kasowanie...','');
+  fbDB.collection('logs').get().then(function(snap){
+    var batches=[], batch=fbDB.batch(), count=0;
+    snap.docs.forEach(function(d){
+      batch.delete(d.ref); count++;
+      if(count%499===0){ batches.push(batch.commit()); batch=fbDB.batch(); count=0; }
+    });
+    batches.push(batch.commit());
+    return Promise.all(batches);
+  }).then(function(){
+    logsRaw=[]; renderLogs([]);
+    setStatus('log-status','Wszystkie logi usuniete','');
+  }).catch(function(e){ setStatus('log-status','Blad: '+e.message,'err'); });
+}
+
+/* ── Helpers ── */
+function setStatus(id, msg, type){
+  var el=document.getElementById(id); if(!el) return;
+  el.textContent=msg;
+  el.className='status-msg'+(type?' '+type:'');
+  el.style.display=msg?'':'none';
+}
+function esc(s){ var d=document.createElement('div'); d.textContent=String(s||''); return d.innerHTML; }
+function timeAgo(ts){
+  if(!ts||!ts.seconds) return '—';
+  var diff=Math.round((Date.now()/1000)-ts.seconds);
+  if(diff<60) return diff+'s';
+  if(diff<3600) return Math.round(diff/60)+'min';
+  if(diff<86400) return Math.round(diff/3600)+'h';
+  return Math.round(diff/86400)+'d';
+}
+
+initFirebase();
+</script>
+</body>
+</html>
