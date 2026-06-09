@@ -3,6 +3,12 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="STREFA Admin">
+<meta name="theme-color" content="#aa3333">
+<link rel="manifest" href="./manifest-admin.json">
 <title>STREFA — Admin</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
 <style>
@@ -114,7 +120,7 @@ var FIREBASE_CONFIG = {
   messagingSenderId: "550880967006",
   appId:             "1:550880967006:web:bae2a37f35705cea5477cf"
 };
-var ADMIN_UID = "BRAK"; // Twoj Firebase UID
+var ADMIN_UID = "cdZ7xpadjUMi94pov8CzkkPGjVE3"; // Twoj Firebase UID
 var LOG_TTL_DAYS = 7;   // Logi starsze niz X dni sa kasowane automatycznie
 </script>
 
@@ -520,6 +526,15 @@ function timeAgo(ts){
 }
 
 initFirebase();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js', {scope: './'})
+      .catch(function(){});
+  });
+}
 </script>
 </body>
 </html>
