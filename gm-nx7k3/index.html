@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="STREFA GM">
+<meta name="theme-color" content="#62a848">
+<link rel="manifest" href="./manifest.json">
+<title>STREFA — Panel GM</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#080b06;--bg2:#0d120a;--bg3:#111a0d;
+  --g1:#2a4a1a;--g2:#62a848;--g3:#9dd67a;
+  --t0:#4a6a34;--t1:#7a9a60;--t2:#bdd4a8;
+  --r1:#4a1a1a;--r2:#aa3333;--r3:#ff6666;
+  --a1:#4a3a10;--a2:#c08020;--a3:#e8c060;
+  --bd2:#324824;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;outline:none;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--t2);font-family:'Share Tech Mono',monospace;font-size:12px;min-height:100vh}
+a{color:var(--g2);text-decoration:none}
+
+/* ── TOP BAR ── */
+#topbar{
+  background:var(--bg2);border-bottom:2px solid var(--g2);
+  padding:8px 14px;display:flex;align-items:center;gap:10px;
+  position:sticky;top:0;z-index:100;flex-wrap:wrap;
+}
+#topbar .logo{color:var(--g2);font-size:13px;letter-spacing:3px;font-weight:bold}
+#topbar .sub{color:var(--t0);font-size:10px;letter-spacing:2px}
+.spacer{flex:1}
+.btn{
+  background:none;border:1px solid var(--g1);color:var(--t1);
+  font-family:'Share Tech Mono',monospace;font-size:10px;
+  padding:4px 10px;cursor:pointer;letter-spacing:1px;
+  transition:border-color .2s,color .2s;
+}
+.btn:hover{border-color:var(--g2);color:var(--g3)}
+.btn-green{border-color:var(--g2);color:var(--g3)}
+#login-info{font-size:10px;color:var(--t0)}
+
+/* ── LOADING ── */
+#loading{text-align:center;padding:60px;color:var(--t0);letter-spacing:2px}
+
+/* ── ROSTER GRID ── */
+#roster{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:12px;padding:14px;
+}
+.char-card{
+  background:var(--bg2);border:1px solid var(--g1);
+  padding:12px;cursor:pointer;
+  transition:border-color .2s,background .2s;
+  position:relative;
+}
+.char-card:hover{border-color:var(--g2);background:var(--bg3)}
+.char-card.dead{border-color:var(--r2);opacity:.7}
+.card-name{font-size:14px;color:var(--g3);letter-spacing:2px}
+.card-frakcja{font-size:10px;color:var(--t0);margin-bottom:8px;letter-spacing:1px}
+.card-lvl{position:absolute;top:10px;right:10px;font-size:10px;color:var(--t0)}
+.card-time{font-size:9px;color:var(--t0);margin-top:6px}
+
+/* stat row */
+.stat-row{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.stat-lbl{font-size:10px;color:var(--t0);min-width:46px}
+.stat-val{font-size:11px;color:var(--t2);min-width:28px}
+.bar-wrap{flex:1;height:6px;background:var(--g1);border-radius:3px;overflow:hidden}
+.bar-fill{height:100%;border-radius:3px;transition:width .3s}
+.bar-pz  .bar-fill{background:var(--g2)}
+.bar-rad .bar-fill{background:var(--a2)}
+.bar-str .bar-fill{background:var(--r2)}
+.bar-fill.warn{background:var(--a2)}
+.bar-fill.crit{background:var(--r2)}
+
+.inst-dots{font-size:13px;letter-spacing:1px;color:var(--g2)}
+
+/* nick badge */
+.nick-badge{
+  display:inline-block;font-size:9px;color:var(--t0);
+  border:1px solid var(--g1);padding:1px 5px;margin-bottom:6px;
+}
+
+/* ── DETAIL MODAL ── */
+#modal-overlay{
+  display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
+  z-index:200;overflow-y:auto;padding:14px;
+}
+#modal-overlay.open{display:flex;align-items:flex-start;justify-content:center}
+#modal-box{
+  background:var(--bg2);border:2px solid var(--g2);
+  width:100%;max-width:680px;padding:16px;position:relative;
+  margin:auto;
+}
+#modal-close{
+  position:sticky;top:0;float:right;background:var(--bg2);
+  border:1px solid var(--g1);color:var(--t1);font-family:'Share Tech Mono',monospace;
+  font-size:11px;padding:3px 8px;cursor:pointer;z-index:10;
+}
+#modal-close:hover{border-color:var(--r2);color:var(--r3)}
+
+/* detail sections */
+.d-title{font-size:16px;color:var(--g3);letter-spacing:3px;margin-bottom:2px}
+.d-sub{font-size:10px;color:var(--t0);letter-spacing:2px;margin-bottom:12px}
+.d-sep{border:none;border-top:1px solid var(--bd2);margin:10px 0}
+.d-section{font-size:10px;color:var(--g2);letter-spacing:2px;margin-bottom:6px;margin-top:10px}
+.d-grid{display:grid;grid-template-columns:1fr 1fr;gap:4px 16px;margin-bottom:8px}
+.d-row{display:flex;justify-content:space-between;align-items:center;padding:1px 0}
+.d-lbl{color:var(--t0)}
+.d-val{color:var(--t2)}
+.circles{letter-spacing:1px;font-size:13px}
+.c-fill{color:var(--g2)}
+.c-empty{color:var(--t0)}
+.sk-grid{display:grid;grid-template-columns:1fr 1fr;gap:2px 14px}
+.sk-row{display:flex;justify-content:space-between;padding:1px 0;font-size:11px}
+.sk-name{color:var(--t1)}
+.sk-dots{font-size:12px;letter-spacing:0}
+.equip-row{display:flex;gap:8px;padding:2px 0;font-size:11px}
+.eq-lbl{color:var(--t0);min-width:80px}
+.eq-val{color:var(--t2);flex:1}
+.bp-item{display:flex;gap:6px;padding:1px 0;font-size:11px;color:var(--t1)}
+.bp-num{color:var(--t0);min-width:20px}
+.notes-text{color:var(--t1);font-size:11px;line-height:1.6;white-space:pre-wrap;padding:4px 0}
+
+/* ── NO CHARS ── */
+#empty-msg{
+  text-align:center;padding:60px 20px;color:var(--t0);line-height:2;
+}
+#empty-msg b{color:var(--t1)}
+
+/* ── MOBILE ── */
+@media(max-width:500px){
+  #roster{padding:8px;gap:8px;grid-template-columns:1fr}
+  .d-grid,.sk-grid{grid-template-columns:1fr}
+  #modal-box{padding:10px}
+}
+</style>
+</head>
+<body>
+
+<!-- ═══ FIREBASE CONFIG ═══════════════════════════════════════
+     Wklej te same dane co w karta-postaci.html
+     ══════════════════════════════════════════════════════════ -->
+<script>
+var FIREBASE_CONFIG = {
+  apiKey:            "AIzaSyDdkGEk9stdgTMwL4csJ3S1okGeJJzaJm4",
+  authDomain:        "strefa-karta.firebaseapp.com",
+  projectId:         "strefa-karta",
+  storageBucket:     "strefa-karta.firebasestorage.app",
+  messagingSenderId: "550880967006",
+  appId:             "1:550880967006:web:bae2a37f35705cea5477cf"
+};
+</script>
+
+<div id="topbar">
+  <div>
+    <div class="logo">&#9762; STREFA</div>
+    <div class="sub">PANEL MISTRZA GRY</div>
+  </div>
+  <span class="spacer"></span>
+  <span id="login-info"></span>
+  <button class="btn" id="btn-refresh" onclick="loadRoster()" title="Odswież">&#8635; Odśwież</button>
+  <button class="btn btn-green" id="btn-login" onclick="loginGoogle()" style="display:none">Zaloguj Google</button>
+  <button class="btn" id="btn-logout" onclick="logoutUser()" style="display:none">Wyloguj</button>
+</div>
+
+<div id="loading">&#9762; Wczytywanie...</div>
+<div id="roster" style="display:none"></div>
+<div id="empty-msg" style="display:none">
+  Brak kart w rosterze.<br>
+  <b>Gracze muszą się zalogować</b> w karta-postaci.html<br>
+  i zapisać kartę — pojawi się tutaj automatycznie.
+</div>
+
+<!-- Detail modal -->
+<div id="modal-overlay" onclick="closeModal(event)">
+  <div id="modal-box">
+    <button id="modal-close" onclick="closeDetail()">✕ Zamknij</button>
+    <div id="modal-content"></div>
+  </div>
+</div>
+
+<script>
+var fbUser=null, fbDB=null;
+var rosterData=[];
+var refreshTimer=null;
+
+/* ── Firebase init ── */
+function initFirebase(){
+  if(FIREBASE_CONFIG.apiKey==='BRAK'){
+    document.getElementById('loading').innerHTML=
+      '<b style="color:var(--r3)">Uzupelnij FIREBASE_CONFIG w pliku!</b>';
+    return;
+  }
+  var s=document.createElement('script');
+  s.src='https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js';
+  s.onload=function(){
+    var s2=document.createElement('script');
+    s2.src='https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js';
+    s2.onload=function(){
+      var s3=document.createElement('script');
+      s3.src='https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js';
+      s3.onload=function(){
+        firebase.initializeApp(FIREBASE_CONFIG);
+        fbDB=firebase.firestore();
+        firebase.auth().onAuthStateChanged(function(user){
+          fbUser=user;
+          if(user){
+            document.getElementById('login-info').textContent=user.displayName||user.email;
+            document.getElementById('btn-logout').style.display='';
+            document.getElementById('btn-login').style.display='none';
+            document.getElementById('loading').style.display='none';
+            loadRoster();
+            refreshTimer=setInterval(loadRoster,30000);
+          } else {
+            document.getElementById('btn-login').style.display='';
+            document.getElementById('btn-logout').style.display='none';
+            document.getElementById('loading').innerHTML=
+              '<span style="color:var(--t0)">Zaloguj się aby zobaczyć karty graczy.</span>';
+          }
+        });
+      };
+      document.head.appendChild(s3);
+    };
+    document.head.appendChild(s2);
+  };
+  document.head.appendChild(s);
+}
+
+function loginGoogle(){
+  var p=new firebase.auth.GoogleAuthProvider();
+  firebase.auth().signInWithPopup(p).catch(function(e){alert(e.message);});
+}
+function logoutUser(){
+  clearInterval(refreshTimer);
+  firebase.auth().signOut();
+  document.getElementById('roster').style.display='none';
+  document.getElementById('empty-msg').style.display='none';
+  document.getElementById('loading').innerHTML=
+    '<span style="color:var(--t0)">Zaloguj się aby zobaczyć karty graczy.</span>';
+  document.getElementById('loading').style.display='';
+}
+
+/* ── Load roster ── */
+function loadRoster(){
+  if(!fbDB||!fbUser) return;
+  fbDB.collection('roster').get().then(function(snap){
+    rosterData=[];
+    snap.docs.forEach(function(doc){
+      rosterData.push(Object.assign({id:doc.id}, doc.data()));
+    });
+    rosterData.sort(function(a,b){
+      return (a.pseudonim||'').localeCompare(b.pseudonim||'');
+    });
+    renderRoster();
+  }).catch(function(e){
+    document.getElementById('loading').innerHTML=
+      '<span style="color:var(--r3)">Brak dostepu do rostera — sprawdz reguly Firestore.<br>'+
+      '<small>'+e.message+'</small></span>';
+    document.getElementById('loading').style.display='';
+  });
+}
+
+/* ── Render roster grid ── */
+function renderRoster(){
+  var grid=document.getElementById('roster');
+  var empty=document.getElementById('empty-msg');
+  if(!rosterData.length){
+    grid.style.display='none';
+    empty.style.display='';
+    return;
+  }
+  grid.style.display='grid';
+  empty.style.display='none';
+  grid.innerHTML='';
+  rosterData.forEach(function(char){
+    grid.appendChild(buildCard(char));
+  });
+}
+
+function buildCard(c){
+  var div=document.createElement('div');
+  var isDead=(c.rad>9||c.stres>9);
+  div.className='char-card'+(isDead?' dead':'');
+  div.onclick=function(){ openDetail(c.id); };
+
+  var pzPct  = c.maxPz>0 ? Math.min(100,Math.round(c.pz/c.maxPz*100)) : 0;
+  var radPct = Math.min(100,Math.round(c.rad/9*100));
+  var strPct = Math.min(100,Math.round(c.stres/9*100));
+  var pzClass= pzPct>50?'':'pzPct>25?warn:crit';
+  if(pzPct<=50) pzClass='warn';
+  if(pzPct<=25) pzClass='crit';
+
+  var inst=0;
+  try{ inst=parseInt((c.charData||{}).inst||0); }catch(e){}
+  var instDots='';
+  for(var i=1;i<=6;i++){
+    if(i===4) instDots+='<span style="color:var(--bd2)"> | </span>';
+    instDots+='<span style="color:'+(i<=inst?'var(--g2)':'var(--t0)')+'">&#9679;</span>';
+  }
+
+  var lvl=1;
+  try{
+    var exp=parseInt((c.charData||{})['f-exp']||0);
+    var s=0; while(true){var cost=lvl<=5?100:Math.floor((lvl-1)/5)*250; if(s+cost<=exp){s+=cost;lvl++;}else break;}
+  }catch(e){}
+
+  var ago='';
+  if(c.lastModified&&c.lastModified.seconds){
+    var diff=Math.round((Date.now()/1000)-c.lastModified.seconds);
+    if(diff<60) ago=diff+'s temu';
+    else if(diff<3600) ago=Math.round(diff/60)+'min temu';
+    else if(diff<86400) ago=Math.round(diff/3600)+'h temu';
+    else ago=Math.round(diff/86400)+'d temu';
+  }
+
+  var isMe=(c.uid===fbUser.uid);
+
+  div.innerHTML=
+    '<div style="display:flex;gap:8px;align-items:flex-start;margin-bottom:6px">'+
+      '<div style="width:52px;height:52px;flex-shrink:0;border:1px solid var(--g1);'+
+      ((c.charData&&c.charData.portrait)?
+        'background:url('+c.charData.portrait+') center/cover;background-size:cover':
+        'background:var(--bg3);display:flex;align-items:center;justify-content:center;color:var(--t0);font-size:16px')+'">'+
+      ((c.charData&&c.charData.portrait)?'':'&#128100;')+
+      '</div><div style="flex:1;min-width:0">'+
+    '<div class="card-name">'+esc(c.pseudonim||'???')+'</div>'+
+    '<div class="card-frakcja">'+esc(c.frakcja||'—')+'</div>'+
+    (c.nick?'<div class="nick-badge">'+esc(c.nick)+'</div>':'')+
+    '<div style="font-size:9px;color:var(--t0)">Poz.'+lvl+(isMe?' [TY]':'')+'</div>'+
+    '</div></div>'+
+    '<div class="stat-row"><span class="stat-lbl">PZ</span><span class="stat-val">'+c.pz+'/'+c.maxPz+'</span>'+
+      '<div class="bar-wrap bar-pz"><div class="bar-fill '+pzClass+'" style="width:'+pzPct+'%"></div></div></div>'+
+    '<div class="stat-row"><span class="stat-lbl">RAD</span><span class="stat-val">'+c.rad+'</span>'+
+      '<div class="bar-wrap bar-rad"><div class="bar-fill" style="width:'+radPct+'%"></div></div></div>'+
+    '<div class="stat-row"><span class="stat-lbl">STRES</span><span class="stat-val">'+c.stres+'</span>'+
+      '<div class="bar-wrap bar-str"><div class="bar-fill" style="width:'+strPct+'%"></div></div></div>'+
+    '<div class="stat-row" style="margin-top:4px"><span class="stat-lbl">Instynkt</span>'+
+      '<span class="inst-dots">'+instDots+'</span></div>'+
+    (ago?'<div class="card-time">Zaktualizowano: '+ago+'</div>':'');
+  return div;
+}
+
+/* ── Detail modal ── */
+function openDetail(charId){
+  var c=rosterData.find(function(x){return x.id===charId;});
+  if(!c) return;
+  var d=c.charData||{};
+  document.getElementById('modal-content').innerHTML=renderDetail(c,d);
+  document.getElementById('modal-overlay').classList.add('open');
+  document.body.style.overflow='hidden';
+}
+function closeDetail(){
+  document.getElementById('modal-overlay').classList.remove('open');
+  document.body.style.overflow='';
+}
+function closeModal(e){
+  if(e.target===document.getElementById('modal-overlay')) closeDetail();
+}
+
+function dots(v,mx,filled){
+  var s='';
+  for(var i=1;i<=mx;i++)
+    s+='<span class="'+(i<=v?'c-fill':'c-empty')+'">&#9679;</span>';
+  return '<span class="circles">'+s+'</span>';
+}
+function esc(s){ var d=document.createElement('div'); d.textContent=s||''; return d.innerHTML; }
+function cBStr(arr){
+  return (arr||[false,false,false,false,false])
+    .map(function(v){return v?'<span style="color:var(--g2)">■</span>':'<span style="color:var(--t0)">□</span>';})
+    .join('');
+}
+
+function renderDetail(c,d){
+  var attrs=d.attrs||{};
+  var skills=d.skills||{};
+  var wyr=parseInt(attrs.wyr||0);
+
+  var lvl=1,exp=parseInt(d['f-exp']||0),s=0;
+  while(true){var cost=lvl<=5?100:Math.floor((lvl-1)/5)*250; if(s+cost<=exp){s+=cost;lvl++;}else break;}
+
+  var html='';
+  var port = (d.portrait||'');
+  if(port) html+='<div style="float:right;margin:0 0 10px 14px"><img src="'+port+'" style="width:90px;height:90px;object-fit:cover;border:1px solid var(--g1)"></div>';
+  html+='<div class="d-title">'+esc(c.pseudonim||'???')+'</div>';
+  html+='<div class="d-sub">'+(c.frakcja||'—')+' &nbsp;·&nbsp; Poziom '+lvl+' &nbsp;·&nbsp; '+exp+' EXP';
+  if(c.nick) html+=' &nbsp;·&nbsp; <span style="color:var(--t0)">'+esc(c.nick)+'</span>';
+  html+='</div>';
+
+  // Atrybuty
+  html+='<hr class="d-sep"><div class="d-section">ATRYBUTY</div>';
+  html+='<div class="d-grid">';
+  [['Wytrzymałość (WYR)','wyr'],['Zręczność (ZRC)','zrc'],
+   ['Percepcja (PER)','per'],['Umysł (UMY)','umy'],['Charyzma (CHA)','cha']].forEach(function(a){
+    html+='<div class="d-row"><span class="d-lbl">'+a[0]+'</span>'+dots(parseInt(attrs[a[1]]||0),5)+'</div>';
+  });
+  html+='</div>';
+
+  // Umiejętności
+  html+='<hr class="d-sep"><div class="d-section">UMIEJĘTNOŚCI</div>';
+  html+='<div class="sk-grid">';
+  var skList=[
+    ['Broń Długa','bron-dluga'],['Broń Krótka','bron-krotka'],['Broń Biała','bron-biala'],['Miotanie','miotanie'],
+    ['Skradanie','skradanie'],['Akrobatyka','akrobatyka'],['Kondycja','kondycja'],
+    ['Technika Zony','tech-zony'],['Medycyna Pol.','medycyna'],['Wiedza o Zonie','wiedza-zona'],['Surwiwal','surwiwal'],
+    ['Perswazja','perswazja'],['Dowodzenie','dowodzenie'],['Zastraszanie','zastraszanie'],['Obs. Detektora','detektory']
+  ];
+  if(d['sk-custom-name']) skList.push([d['sk-custom-name'],'custom']);
+  skList.forEach(function(sk){
+    var v=parseInt(skills[sk[1]]||0);
+    if(v===0) return; // skip zerowe
+    html+='<div class="sk-row"><span class="sk-name">'+esc(sk[0])+'</span>'+dots(v,5)+'</div>';
+  });
+  html+='</div>';
+
+  // Stan organizmu
+  html+='<hr class="d-sep"><div class="d-section">STAN ORGANIZMU</div>';
+  html+='<div class="d-row"><span class="d-lbl">Punkty Życia</span><span class="d-val">'+
+    (d['f-hp']||wyr+5)+' / '+(wyr+5)+'</span></div>';
+  html+='<div class="d-row" style="margin-top:4px"><span class="d-lbl">Skażenie (RAD)</span>'+dots(parseInt(d.rad||0),9)+'</div>';
+  html+='<div class="d-row"><span class="d-lbl">Psyche (STRES)</span>'+dots(parseInt(d.stres||0),9)+'</div>';
+  html+='<div class="d-row"><span class="d-lbl">Instynkt</span>'+dots(parseInt(d.inst||0),6)+'</div>';
+  html+='<div class="d-row"><span class="d-lbl">Ruble</span><span class="d-val">'+(d['f-ruble']||0)+' RU</span></div>';
+
+  // Ekwipunek
+  html+='<hr class="d-sep"><div class="d-section">EKWIPUNEK</div>';
+  if(d['f-bron-g']){
+    html+='<div class="equip-row"><span class="eq-lbl">Broń główna</span><span class="eq-val">'+esc(d['f-bron-g'])+
+      (d['f-bron-g-typ']?' ['+esc(d['f-bron-g-typ'])+']':'')+
+      (d['f-bron-g-obr']?' Obr:'+esc(d['f-bron-g-obr']):'')+
+      ' Ammo:'+(d['f-ammo-g-c']||0)+'/'+(d['f-ammo-g-m']||0)+'</span></div>';
+  }
+  if(d['f-bron-b']){
+    html+='<div class="equip-row"><span class="eq-lbl">Broń boczna</span><span class="eq-val">'+esc(d['f-bron-b'])+
+      (d['f-bron-b-obr']?' Obr:'+esc(d['f-bron-b-obr']):'')+
+      ' Ammo:'+(d['f-ammo-b-c']||0)+'/'+(d['f-ammo-b-m']||0)+'</span></div>';
+  }
+  if(d['f-bron-bw']){
+    html+='<div class="equip-row"><span class="eq-lbl">Broń biała</span><span class="eq-val">'+esc(d['f-bron-bw'])+
+      (d['f-bron-bw-obr']?' Obr:'+esc(d['f-bron-bw-obr']):'')+'</span></div>';
+  }
+  if(d['f-pancerz']){
+    html+='<div class="equip-row"><span class="eq-lbl">Pancerz</span><span class="eq-val">'+esc(d['f-pancerz'])+
+      ' &nbsp;'+cBStr(d.cbP)+'</span></div>';
+  }
+  if(d['f-helm']){
+    html+='<div class="equip-row"><span class="eq-lbl">Hełm/Maska</span><span class="eq-val">'+esc(d['f-helm'])+
+      ' &nbsp;'+cBStr(d.cbH)+'</span></div>';
+  }
+  if(d['f-detektor']){
+    html+='<div class="equip-row"><span class="eq-lbl">Detektor</span><span class="eq-val">'+esc(d['f-detektor'])+'</span></div>';
+  }
+
+  // Plecak
+  var bpItems=(d.bp||[]).filter(function(it){return it&&it.n;});
+  if(bpItems.length){
+    html+='<hr class="d-sep"><div class="d-section">PLECAK</div>';
+    bpItems.forEach(function(it,i){
+      html+='<div class="bp-item"><span class="bp-num">'+(i+1)+'.</span>'+
+        (it.t&&it.t!=='--'?'<span style="color:var(--t0)">['+esc(it.t)+']</span> ':'')+
+        '<span>'+esc(it.n)+(it.v?' ['+esc(it.v)+' RU]':'')+'</span></div>';
+    });
+  }
+
+  // Artefakty
+  var arts=(d.art||[]).filter(function(a){return a&&a.n;});
+  if(arts.length){
+    html+='<hr class="d-sep"><div class="d-section">ARTEFAKTY</div>';
+    arts.forEach(function(a){
+      html+='<div class="equip-row"><span class="eq-lbl">'+esc(a.n)+'</span>'+
+        '<span class="eq-val">Emisja:'+(a.e||'?')+(a.v?' ['+esc(a.v)+' RU]':'')+'</span></div>';
+    });
+  }
+
+  // Blizny / Notatki
+  if(d['f-blizny']){
+    html+='<hr class="d-sep"><div class="d-section">BLIZNY I OBRAŻENIA</div>';
+    html+='<div class="notes-text">'+esc(d['f-blizny'])+'</div>';
+  }
+  if(d['f-notatki']){
+    html+='<hr class="d-sep"><div class="d-section">NOTATKI</div>';
+    html+='<div class="notes-text">'+esc(d['f-notatki'])+'</div>';
+  }
+
+  return html;
+}
+
+initFirebase();
+</script>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('./sw.js', {scope: './'})
+      .catch(function(){});
+  });
+}
+</script>
+</body>
+</html>
