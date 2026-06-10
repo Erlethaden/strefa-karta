@@ -2460,11 +2460,11 @@ var admRosterData  = [];
 var admLogsRaw     = [];
 
 function showAdminTab(name) {
-  ['chars','logs','users'].forEach(function(t){
+  ['chars','logs','users','changelog'].forEach(function(t){
     document.getElementById('adm-'+t).style.display = t===name?'block':'none';
   });
   document.querySelectorAll('.adm-tab').forEach(function(el,i){
-    el.classList.toggle('active', ['chars','logs','users'][i]===name);
+    el.classList.toggle('active', ['chars','logs','users','changelog'][i]===name);
   });
   if(name==='logs'      && !admLogsRaw.length) admLoadLogs();
   if(name==='users')                           admLoadUsers();
