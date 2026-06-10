@@ -606,6 +606,7 @@ html{background:#040604;scrollbar-width:thin;scrollbar-color:var(--g1) var(--bg2
   <button class="btn btn-amber" onclick="openDiscord()">&#128228; Discord eksport</button>
   <button class="btn btn-amber" onclick="openDiscordImport()">&#128229; Discord import</button>
   <button class="btn btn-dim" onclick="confirmReset()">Reset</button>
+  <button class="btn btn-dim" id="btn-changelog" onclick="showChangelog()" style="display:none">&#128221; Co nowego?</button>
 </div>
 
 <!-- SHEET -->
@@ -2045,7 +2046,20 @@ function checkNick(user) {
         writeLog('login', {});
         loadCharList();
         loadUserRole(user.uid);
+        loadChangelog();
         document.getElementById('tab-bar').style.display = 'flex';
+        // Auto-cleanup logs older than 3 days (silent, admin only)
+        if (user.uid === ADMIN_UID) {
+          var cutoff = new Date(); cutoff.setDate(cutoff.getDate() - 3);
+          var ts = firebase.firestore.Timestamp.fromDate(cutoff);
+          fbDB.collection('logs').where('timestamp','<',ts).get()
+            .then(function(snap) {
+              if (!snap.docs.length) return;
+              var b = fbDB.batch();
+              snap.docs.forEach(function(d) { b.delete(d.ref); });
+              b.commit().catch(function(){});
+            }).catch(function(){});
+        }
       } else {
         // First login — show nick prompt
         var ni = document.getElementById('nick-input');
@@ -2079,6 +2093,7 @@ function saveNick() {
       writeLog('login', { firstTime: true });
       loadCharList();
       loadUserRole(fbUser.uid);
+      loadChangelog();
       document.getElementById('tab-bar').style.display = 'flex';
     })
     .catch(function(e) {
@@ -2451,8 +2466,9 @@ function showAdminTab(name) {
   document.querySelectorAll('.adm-tab').forEach(function(el,i){
     el.classList.toggle('active', ['chars','logs','users'][i]===name);
   });
-  if(name==='logs'  && !admLogsRaw.length)  admLoadLogs();
-  if(name==='users')                         admLoadUsers();
+  if(name==='logs'      && !admLogsRaw.length) admLoadLogs();
+  if(name==='users')                           admLoadUsers();
+  if(name==='changelog')                       admLoadChangelog();
 }
 
 function admLoadRoster() {
@@ -2645,6 +2661,144 @@ function admSetRole(uid, roleKey, value) {
     .catch(function(e){ alert('Błąd zapisu roli: '+e.message); });
 }
 
+
+
+/* ─── CHANGELOG ─────────────────────────────── */
+var currentChangelogVer = null;
+
+function loadChangelog() {
+  if (!fbDB || !fbUser) return;
+  fbDB.collection('config').doc('changelog').get()
+    .then(function(doc) {
+      if (!doc.exists || !doc.data().content) return;
+      var cl = doc.data();
+      currentChangelogVer = cl.version || '';
+      // Pokaż przycisk "Co nowego?" zawsze po zalogowaniu
+      var btn = document.getElementById('btn-changelog');
+      if (btn) btn.style.display = '';
+      // Sprawdź czy użytkownik widział tę wersję
+      fbDB.collection('users').doc(fbUser.uid).get()
+        .then(function(uDoc) {
+          var seen = uDoc.exists ? (uDoc.data().seenChangelog || '') : '';
+          if (seen !== currentChangelogVer) {
+            showChangelogModal(cl);
+          }
+        })
+        .catch(function() { showChangelogModal(cl); });
+    })
+    .catch(function() {});
+}
+
+function showChangelog() {
+  if (!fbDB) return;
+  fbDB.collection('config').doc('changelog').get()
+    .then(function(doc) {
+      if (doc.exists) showChangelogModal(doc.data());
+    });
+}
+
+function showChangelogModal(cl) {
+  document.getElementById('cl-modal-ver').textContent = cl.version || '—';
+  document.getElementById('cl-modal-text').textContent = cl.content || '';
+  document.getElementById('changelog-modal').classList.add('open');
+}
+
+function closeChangelog() {
+  document.getElementById('changelog-modal').classList.remove('open');
+  // Zapisz że użytkownik widział tę wersję
+  if (fbDB && fbUser && currentChangelogVer) {
+    fbDB.collection('users').doc(fbUser.uid)
+      .set({ seenChangelog: currentChangelogVer }, { merge: true })
+      .catch(function(){});
+  }
+}
+
+/* ── Admin changelog ── */
+function admLoadChangelog() {
+  if (!fbDB) return;
+  document.getElementById('adm-cl-status').textContent = 'Wczytywanie...';
+  fbDB.collection('config').doc('changelog').get()
+    .then(function(doc) {
+      if (doc.exists) {
+        var cl = doc.data();
+        document.getElementById('adm-cl-text').value = cl.content || '';
+        document.getElementById('adm-cl-ver').textContent = cl.version || '—';
+        admLoadChangelogStats(cl.version || '');
+      } else {
+        document.getElementById('adm-cl-ver').textContent = 'Brak changelogu';
+      }
+      document.getElementById('adm-cl-status').textContent = '';
+    })
+    .catch(function(e) { document.getElementById('adm-cl-status').textContent = 'Błąd: ' + e.message; });
+}
+
+function admLoadChangelogStats(version) {
+  if (!fbDB || !version) return;
+  // Check how many users have seen this version
+  fbDB.collection('users').get().then(function(snap) {
+    var total = snap.docs.length;
+    var seen  = snap.docs.filter(function(d) {
+      return d.data().seenChangelog === version;
+    }).length;
+    var statsEl = document.getElementById('adm-cl-stats');
+    if (statsEl) {
+      statsEl.innerHTML =
+        '<span style="color:var(--g3)">' + seen + '</span>' +
+        '<span style="color:var(--t0)"> / ' + total + ' graczy widziało tę wersję</span>';
+    }
+    admRenderChangelogUsers(snap.docs, version);
+  });
+}
+
+function admRenderChangelogUsers(docs, version) {
+  var listEl = document.getElementById('adm-cl-users');
+  if (!listEl) return;
+  listEl.innerHTML = '';
+  docs.forEach(function(d) {
+    var u = d.data();
+    var hasSeen = u.seenChangelog === version;
+    var row = document.createElement('div');
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:4px 0;border-bottom:1px solid var(--bd1);font-size:11px';
+    row.innerHTML =
+      '<span style="color:' + (hasSeen ? 'var(--g2)' : 'var(--r3)') + ';font-size:12px">' +
+        (hasSeen ? '✓' : '○') + '</span>' +
+      '<span style="color:var(--t2);flex:1">' + escHtml(u.nick || '?') + '</span>' +
+      '<span style="color:var(--t0);font-size:10px">' + escHtml(u.email || '') + '</span>';
+    listEl.appendChild(row);
+  });
+}
+
+function admSaveChangelog() {
+  var content = document.getElementById('adm-cl-text').value.trim();
+  if (!content) { document.getElementById('adm-cl-status').textContent = 'Wpisz treść changelogu.'; return; }
+  var version = new Date().toISOString().slice(0, 16).replace('T', ' ');
+  document.getElementById('adm-cl-status').textContent = 'Zapisywanie...';
+  fbDB.collection('config').doc('changelog').set({
+    content: content,
+    version: version,
+    publishedAt: firebase.firestore.FieldValue.serverTimestamp()
+  }).then(function() {
+    document.getElementById('adm-cl-ver').textContent = version;
+    document.getElementById('adm-cl-status').textContent = 'Zapisano! Gracze zobaczą modal przy następnym logowaniu.';
+    currentChangelogVer = version;
+    admLoadChangelogStats(version);
+    setTimeout(function() { document.getElementById('adm-cl-status').textContent = ''; }, 4000);
+  }).catch(function(e) { document.getElementById('adm-cl-status').textContent = 'Błąd: ' + e.message; });
+}
+
+function admResetChangelogSeen() {
+  if (!confirm('Zresetować "widziałem" dla wszystkich użytkowników?\nWszyscy zobaczą changelog ponownie.')) return;
+  fbDB.collection('users').get().then(function(snap) {
+    var batch = fbDB.batch();
+    snap.docs.forEach(function(d) {
+      batch.update(d.ref, { seenChangelog: '' });
+    });
+    batch.commit().then(function() {
+      document.getElementById('adm-cl-status').textContent = 'Zresetowano dla ' + snap.docs.length + ' użytkowników.';
+      if (currentChangelogVer) admLoadChangelogStats(currentChangelogVer);
+    });
+  });
+}
 
 /* ─── ZLECENIE ───────────────────────────────── */
 var questMode = 'text';
@@ -2896,6 +3050,7 @@ document.addEventListener('DOMContentLoaded', init);
     <div class="adm-tab active" onclick="showAdminTab('chars')">&#128101; POSTACIE</div>
     <div class="adm-tab"       onclick="showAdminTab('logs')">&#128196; LOGI</div>
     <div class="adm-tab"       onclick="showAdminTab('users')">&#128273; UŻYTKOWNICY</div>
+    <div class="adm-tab"       onclick="showAdminTab('changelog')">&#128221; CHANGELOG</div>
   </div>
   <div style="padding:14px;max-width:1100px;margin:0 auto">
 
@@ -2954,6 +3109,27 @@ document.addEventListener('DOMContentLoaded', init);
       </table>
     </div>
 
+    <!-- Changelog -->
+    <div id="adm-changelog" style="display:none">
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
+        <button class="btn btn-green" onclick="admSaveChangelog()">&#128190; Zapisz changelog</button>
+        <span id="adm-cl-status" style="font-size:10px;color:var(--g3)"></span>
+      </div>
+      <p style="font-size:10px;color:var(--t0);margin-bottom:8px;line-height:1.7">
+        Wpisz co zostało zmienione/dodane. Po zapisaniu gracze zobaczą modal przy następnym logowaniu.<br>
+        Wersja jest ustawiana automatycznie na podstawie czasu zapisu.
+      </p>
+      <div style="font-size:10px;color:var(--t0);margin-bottom:4px">Wersja: <span id="adm-cl-ver" style="color:var(--g3)">—</span></div>
+      <textarea id="adm-cl-text" style="width:100%;min-height:180px;background:var(--bg);border:1px solid var(--bd2);
+        color:var(--t2);font-family:'Share Tech Mono',monospace;font-size:11px;padding:10px;
+        outline:none;resize:vertical;line-height:1.7" placeholder="Co nowego w tej wersji..."></textarea>
+      <div style="margin-top:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span id="adm-cl-stats" style="font-size:11px"></span>
+        <button class="btn btn-red" onclick="admResetChangelogSeen()" style="font-size:9px;padding:2px 8px">&#8635; Resetuj "widziałem" dla wszystkich</button>
+      </div>
+      <div id="adm-cl-users" style="margin-top:8px;max-height:200px;overflow-y:auto"></div>
+    </div>
+
     <!-- Użytkownicy -->
     <div id="adm-users" style="display:none">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
@@ -2974,6 +3150,21 @@ document.addEventListener('DOMContentLoaded', init);
   <div class="modal-box" style="max-width:680px">
     <button class="modal-close-btn" onclick="gmCloseDetailBtn()">&#x2715; Zamknij</button>
     <div id="gm-detail-content"></div>
+  </div>
+</div>
+
+<!-- Changelog modal -->
+<div class="modal-overlay" id="changelog-modal">
+  <div class="modal-box" style="max-width:520px">
+    <div class="modal-title">&#128221; CO NOWEGO</div>
+    <div style="font-size:10px;color:var(--t0);margin-bottom:8px">
+      Wersja: <span id="cl-modal-ver" style="color:var(--g3)"></span>
+    </div>
+    <div id="cl-modal-text" style="color:var(--t2);font-size:11px;line-height:1.8;
+      white-space:pre-wrap;max-height:60vh;overflow-y:auto;padding-right:4px"></div>
+    <div class="modal-btns" style="margin-top:12px">
+      <button class="btn btn-green" onclick="closeChangelog()">Rozumiem</button>
+    </div>
   </div>
 </div>
 
