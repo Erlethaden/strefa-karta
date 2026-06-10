@@ -782,97 +782,6 @@ html{background:#040604;scrollbar-width:thin;scrollbar-color:var(--g1) var(--bg2
     </div>
   </div>
 
-  <div class="sec" id="sec-zlecenie" style="margin-bottom:12px">
-    <div class="stitle">Aktualne Zlecenie</div>
-    <div class="quest-mode-btns">
-      <button class="quest-mode-btn active" id="qbtn-text" onclick="setQuestMode('text')">&#128221; Opis</button>
-      <button class="quest-mode-btn"        id="qbtn-img"  onclick="setQuestMode('img')">&#128444; Obraz</button>
-    </div>
-    <!-- Text mode -->
-    <div id="quest-text-mode">
-      <div class="quest-fields">
-        <div class="quest-field">
-          <span class="quest-lbl">TYTUŁ</span>
-          <input class="quest-inp" id="q-tytul" placeholder="Nazwa zlecenia...">
-        </div>
-        <div class="quest-field">
-          <span class="quest-lbl">OD KOGO</span>
-          <input class="quest-inp" id="q-kogo" placeholder="Zleceniodawca...">
-        </div>
-        <div class="quest-field quest-desc">
-          <span class="quest-lbl">OPIS</span>
-          <textarea class="quest-inp notes-ta" id="q-opis" placeholder="Treść zlecenia..." style="min-height:60px;resize:vertical"></textarea>
-        </div>
-        <div class="quest-field">
-          <span class="quest-lbl">NAGRODA (opcjonalna)</span>
-          <input class="quest-inp" id="q-nagroda" placeholder="Ruble, przedmioty, info...">
-        </div>
-      </div>
-    </div>
-    <!-- Image mode -->
-    <div id="quest-img-mode" style="display:none">
-      <div class="quest-img-wrap" id="quest-img-wrap" onclick="questImgClick()" title="Kliknij aby dodać obraz zlecenia">
-        <div class="quest-img-placeholder" id="quest-img-placeholder">&#128444; Kliknij aby dodać obraz zlecenia<br><span style="font-size:9px;color:var(--t0)">(zdjęcie kartki, screenshota itp.)</span></div>
-        <img id="quest-img" src="" alt="" style="display:none">
-        <button class="quest-img-del" onclick="deleteQuestImg(event)" title="Usuń obraz">✕</button>
-      </div>
-      <input type="file" id="quest-img-input" accept="image/*" style="display:none" onchange="handleQuestImgFile(this)">
-    </div>
-  </div>
-
-
-  <!-- ZLECENIE SECTION -->
-  <div class="sec" id="sec-zlecenie" style="margin-bottom:10px">
-    <div class="stitle">
-      Aktualne Zlecenie
-      <button class="pda-mode-toggle" id="pda-mode-btn" onclick="toggleZlecenieMode()">&#128247; Tryb: tekst</button>
-    </div>
-
-    <!-- TEXT MODE -->
-    <div id="zlecenie-text">
-      <div class="pda-terminal">
-        <div class="pda-hdr">
-          <div class="pda-hdr-left">
-            <span class="pda-dot-grn">&#9679;</span>
-            <span class="pda-nowa">NOWA WIADOMOSC</span>
-          </div>
-          <span class="pda-date" id="pda-date"></span>
-        </div>
-        <div class="pda-cols">
-          <div class="pda-left">
-            <div class="pda-lbl">NADAWCA</div>
-            <input class="pda-input" id="z-nadawca" placeholder="...">
-            <div class="pda-lbl" style="margin-top:12px">NAGRODA</div>
-            <input class="pda-input" id="z-nagroda" placeholder="opcjonalne">
-          </div>
-          <div class="pda-right">
-            <div class="pda-mission-hdr">
-              <span class="pda-dot-amb">&#9679;</span>
-              <span class="pda-mission-lbl">ZLECENIE ZADANIA</span>
-            </div>
-            <input class="pda-title-inp" id="z-tytul" placeholder="TYTUL ZLECENIA">
-            <hr class="pda-div">
-            <textarea class="pda-opis-inp" id="z-opis" placeholder="Opis zlecenia..."></textarea>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- IMAGE MODE -->
-    <div id="zlecenie-img" style="display:none">
-      <div class="pda-img-wrap" onclick="zlecenieImgClick()">
-        <img id="zlecenie-img-el" src="" alt="" style="display:none">
-        <div class="pda-img-ph" id="zlecenie-img-ph">
-          &#128247; Kliknij aby dodac obraz zlecenia
-        </div>
-        <button class="pda-img-del" onclick="deleteZlecenieImg(event)">&#x2715; Usun</button>
-      </div>
-      <input type="file" id="zlecenie-img-input" accept="image/*" style="display:none" onchange="handleZlecenieImg(this)">
-    </div>
-  </div>
-
-
-  <!-- ZLECENIE -->
   <div class="sec" style="margin-bottom:10px" id="sec-zlecenie">
     <div class="stitle">
       Aktualne Zlecenie
@@ -2764,7 +2673,7 @@ function handleQuestImgFile(input) {
     var canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-    var b64 = canvas.toDataURL('image/jpeg', 0.80);
+    var b64 = canvas.toDataURL('image/jpeg', 0.75);
     setQuestImg(b64);
     save();
   };
@@ -2900,13 +2809,13 @@ function zImgLoad(input) {
   img.onload = function() {
     URL.revokeObjectURL(url);
     // Scale: max 700px wide, keep aspect ratio (original ~1108x728)
-    var maxW = 700;
+    var maxW = 500;
     var w = Math.min(img.width, maxW);
     var h = Math.round(img.height * (w / img.width));
     var canvas = document.createElement('canvas');
     canvas.width = w; canvas.height = h;
     canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-    var b64 = canvas.toDataURL('image/jpeg', 0.80);
+    var b64 = canvas.toDataURL('image/jpeg', 0.75);
     var el = document.getElementById('z-img-el');
     var ph = document.getElementById('z-img-ph');
     el.src = b64; el.style.display = 'block';
