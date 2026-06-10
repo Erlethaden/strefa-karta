@@ -26,10 +26,19 @@ self.addEventListener('activate', function(e) {
 });
 
 self.addEventListener('fetch', function(e) {
+  // Tylko GET — nie cache'uj POST/PUT (Firebase, itp.)
+  if (e.request.method !== 'GET') return;
+  // Nie cache'uj requestów do zewnętrznych API
+  var url = e.request.url;
+  if (url.indexOf('firestore.googleapis.com') >= 0 ||
+      url.indexOf('firebase') >= 0 ||
+      url.indexOf('googleapis.com') >= 0 ||
+      url.indexOf('gstatic.com') >= 0) return;
+
   e.respondWith(
     caches.match(e.request).then(function(cached) {
       var fresh = fetch(e.request).then(function(res) {
-        var clone = res.clone(); // clone BEFORE returning
+        var clone = res.clone();
         caches.open(CACHE).then(function(c) { c.put(e.request, clone); });
         return res;
       }).catch(function() { return cached; });
