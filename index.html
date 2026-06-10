@@ -503,10 +503,10 @@ body{background:#040604;color:var(--t2);font-family:'Share Tech Mono',monospace;
 .pda-desc{background:transparent;border:none;color:var(--t2);font-family:'Share Tech Mono',monospace;
   font-size:10px;width:100%;resize:none;outline:none;line-height:1.6;min-height:56px;padding:2px 0}
 .pda-desc::placeholder{color:var(--t0)}
-.pda-img-zone{position:relative;cursor:pointer;background:#040a03;border:1px dashed var(--g1);
+.pda-img-zone{position:relative;cursor:pointer;background:#040a03;border:1px dashed var(--g1);max-width:800px;
   display:flex;align-items:center;justify-content:center;transition:.2s;overflow:hidden}
 .pda-img-zone:hover{border-color:var(--g2)}
-.pda-img-zone img{width:100%;height:auto;display:block}
+.pda-img-zone img{max-width:100%;height:auto;display:block;margin:0 auto}
 .pda-img-ph{font-size:10px;color:var(--t0);letter-spacing:1px;text-align:center;padding:20px}
 .pda-img-del{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.8);border:1px solid var(--r1);
   color:var(--r3);font-family:'Share Tech Mono',monospace;font-size:9px;cursor:pointer;
@@ -2809,7 +2809,7 @@ function zImgLoad(input) {
   img.onload = function() {
     URL.revokeObjectURL(url);
     // Scale: max 700px wide, keep aspect ratio (original ~1108x728)
-    var maxW = 500;
+    var maxW = 800;
     var w = Math.min(img.width, maxW);
     var h = Math.round(img.height * (w / img.width));
     var canvas = document.createElement('canvas');
