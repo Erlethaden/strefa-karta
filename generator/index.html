@@ -572,7 +572,57 @@ function drawGlow(ctx, x, y, outerR, innerR, outer, inner, alpha) {
   ctx.restore();
 }
 
-function drawAnimFrame(ctx, base, t, scale, pad) {
+/* Zakłócenia ekranu — seamless: glitch=0 na granicy pętli, szczyt w połowie */
+function drawGlitch(ctx, base, t, scale, pad, loopDur) {
+  const phase = (t % loopDur) / loopDur;
+  const amt   = Math.pow(Math.sin(phase * Math.PI), 2); // 0→peak→0, gładko
+  if (amt < 0.03) return;
+
+  // Granice obszaru ekranu w koordynatach canvasa
+  const sx = Math.round(pad + 68  * scale);
+  const sy = Math.round(pad + 33  * scale);
+  const sw = Math.round(358 * scale);
+  const sh = Math.round(263 * scale);
+
+  // 1. Poziome szarpnięcia (displaced strips)
+  const nTears = 2 + Math.floor(amt * 4);
+  for (let i = 0; i < nTears; i++) {
+    const fy = sy + Math.floor(Math.random() * sh);
+    const fh = Math.ceil((1 + Math.random() * 2) * scale);
+    const dx = (Math.random() - 0.5) * 22 * amt * scale;
+    ctx.save();
+    ctx.beginPath(); ctx.rect(sx, fy, sw, fh); ctx.clip();
+    ctx.drawImage(base, dx, 0);
+    ctx.restore();
+  }
+
+  // 2. Losowe znaki statyki nad ekranem
+  const fz = Math.round(9 * scale);
+  ctx.save();
+  ctx.font = fz + 'px monospace';
+  ctx.beginPath(); ctx.rect(sx, sy, sw, sh); ctx.clip();
+  const glChars = '█▓░01ABEFX●■◆─│';
+  const nChars  = Math.floor(amt * 24);
+  for (let i = 0; i < nChars; i++) {
+    const gx = sx + Math.random() * (sw - fz);
+    const gy = sy + fz + Math.random() * (sh - fz * 2);
+    ctx.fillStyle   = Math.random() > 0.6 ? '#ffcc44' : '#d4ff70';
+    ctx.globalAlpha = (0.4 + Math.random() * 0.6) * amt;
+    ctx.fillText(glChars[Math.floor(Math.random() * glChars.length)], gx, gy);
+  }
+  ctx.restore();
+
+  // 3. Błysk poziomej linii przy dużym glitchu
+  if (amt > 0.5 && Math.random() > 0.4) {
+    ctx.save();
+    ctx.globalAlpha = 0.18 * amt;
+    ctx.fillStyle   = '#a8e040';
+    ctx.fillRect(sx, sy + Math.floor(Math.random() * sh), sw, Math.ceil(scale * 1.5));
+    ctx.restore();
+  }
+}
+
+function drawAnimFrame(ctx, base, t, scale, pad, loopDur) {
   ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
   ctx.drawImage(base, 0, 0);
   for (const d of DOTS) {
@@ -587,6 +637,7 @@ function drawAnimFrame(ctx, base, t, scale, pad) {
     }
     if (alpha > 0.01) drawGlow(ctx, cx, cy, r*2.2, r*0.55, d.color[0], d.color[1], alpha);
   }
+  if (loopDur) drawGlitch(ctx, base, t, scale, pad, loopDur);
 }
 
 /* Wspólna funkcja przechwycenia PDA */
@@ -613,34 +664,79 @@ function showMediaModal(url, type, subject) {
   const media = $('exp-media');
   const dl    = $('exp-dl');
   media.innerHTML = '';
+  dl.onclick = null;           // reset poprzedniego handlera
+  dl.style.display = 'none';   // domyślnie ukryty, włączamy selektywnie
 
   if (type === 'video') {
     const v = document.createElement('video');
     v.src = url; v.controls = true; v.autoplay = true; v.loop = true;
     v.style.cssText = 'max-width:100%;height:auto;display:block';
     media.appendChild(v);
-    dl.href = url; dl.download = subject + '.webm';
+    dl.href = url; dl.download = subject + '.webm'; dl.textContent = '↓ Pobierz WebM';
     if (isMobile()) {
-      inst.innerHTML = 'Odtwarzaj i <strong>przytrzymaj wideo</strong> → Zapisz wideo.';
+      inst.innerHTML = 'Odtwórz, potem <strong>przytrzymaj wideo</strong> → Zapisz wideo.';
     } else {
       inst.innerHTML = 'Kliknij <strong>Pobierz WebM</strong> — wideo z dźwiękiem.';
       dl.style.display = 'block';
     }
+
+  } else if (type === 'gif') {
+    const img = document.createElement('img');
+    img.src = url; img.alt = 'animacja PDA';
+    img.style.cssText = 'max-width:100%;height:auto;display:block';
+    media.appendChild(img);
+
+    if (isMobile()) {
+      /* Długie przytrzymanie zapisuje tylko 1 klatkę — trzeba Web Share API */
+      const canShare = !!(navigator.share && navigator.canShare);
+      inst.innerHTML = canShare
+        ? '⚠ Przytrzymanie obrazu zapisuje <strong>tylko pierwszą klatkę</strong>.<br>Użyj przycisku poniżej — zachowuje pełną animację.'
+        : '⚠ Przytrzymanie może zapisać tylko pierwszą klatkę.<br>Naciśnij i przytrzymaj obraz → <em>Otwórz w nowej karcie</em>, tam zapisz.';
+
+      if (canShare) {
+        dl.href     = '#';
+        dl.download = '';
+        dl.textContent = '📤 Udostępnij GIF (zachowuje animację)';
+        dl.style.display = 'block';
+        dl.onclick = async e => {
+          e.preventDefault();
+          try {
+            const blob = await (await fetch(url)).blob();
+            const file = new File([blob], subject + '.gif', { type: 'image/gif' });
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({ files: [file], title: 'Misja PDA' });
+            } else {
+              alert('Udostępnianie pliku GIF nie jest obsługiwane przez tę przeglądarkę.');
+            }
+          } catch(err) {
+            if (err.name !== 'AbortError') alert('Błąd udostępniania:\n' + err.message);
+          }
+        };
+      }
+
+    } else {
+      /* Desktop — normalny download */
+      dl.href = url; dl.download = subject + '.gif'; dl.textContent = '↓ Pobierz GIF';
+      dl.onclick = null;
+      inst.innerHTML = 'Kliknij <strong>Pobierz GIF</strong> lub prawy klik na obrazie → Zapisz jako.';
+      dl.style.display = 'block';
+    }
+
   } else {
+    /* PNG */
     const img = document.createElement('img');
     img.src = url; img.alt = 'PDA misja';
     img.style.cssText = 'max-width:100%;height:auto;display:block';
     media.appendChild(img);
-    const ext = type === 'gif' ? '.gif' : '.png';
-    dl.href = url; dl.download = subject + ext;
+    dl.href = url; dl.download = subject + '.png'; dl.textContent = '↓ Pobierz PNG';
     if (isMobile()) {
       inst.innerHTML = '<strong>Przytrzymaj obraz palcem</strong> → "Zapisz obraz".';
-      dl.style.display = 'none';
     } else {
-      inst.innerHTML = 'Kliknij <strong>Pobierz</strong> lub prawy klik → Zapisz jako.';
+      inst.innerHTML = 'Kliknij <strong>Pobierz PNG</strong> lub prawy klik → Zapisz jako.';
       dl.style.display = 'block';
     }
   }
+
   $('exp-modal').classList.add('open');
 }
 
@@ -699,7 +795,7 @@ $('btn-gif').addEventListener('click', async () => {
     const workerText = await fetch('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js').then(r => r.text());
     const workerUrl  = URL.createObjectURL(new Blob([workerText], {type:'application/javascript'}));
 
-    const fps = 12, dur = 2; // 2-sekundowa pętla
+    const fps = 10, dur = 3.6; // 3.6s — LCM(1.2,1.8,0.9): LED×3, status×2, amber×4 — seamless loop
     const frameDelay = Math.round(1000 / fps);
     const frames = fps * dur;
 
@@ -714,7 +810,7 @@ $('btn-gif').addEventListener('click', async () => {
     const ctx = ac.getContext('2d');
 
     for (let i = 0; i < frames; i++) {
-      drawAnimFrame(ctx, base, (i / frames) * dur, scale, pad);
+      drawAnimFrame(ctx, base, (i / frames) * dur, scale, pad, dur);
       gif.addFrame(ctx, { copy: true, delay: frameDelay });
     }
 
@@ -742,8 +838,11 @@ $('btn-vid').addEventListener('click', async () => {
     return;
   }
 
-  btn.disabled = true;
+  btn.disabled    = true;
   btn.textContent = '... renderowanie ...';
+
+  let audioCtx   = null;
+  let animActive = false;
 
   try {
     const scale = 2, pad = 34;
@@ -754,10 +853,10 @@ $('btn-vid').addEventListener('click', async () => {
     ac.width  = base.width;
     ac.height = base.height;
     const ctx = ac.getContext('2d');
-    drawAnimFrame(ctx, base, 0, scale, pad); // pierwsza klatka przed startem streamu
+    drawAnimFrame(ctx, base, 0, scale, pad, AUDIO_DURATION_MS / 1000);
 
     /* Audio */
-    const audioCtx  = new (window.AudioContext || window.webkitAudioContext)();
+    audioCtx        = new (window.AudioContext || window.webkitAudioContext)();
     const arrayBuf  = await fetch(AUDIO_DATA_URL).then(r => r.arrayBuffer());
     const audioBuf  = await audioCtx.decodeAudioData(arrayBuf);
     const src       = audioCtx.createBufferSource();
@@ -765,74 +864,66 @@ $('btn-vid').addEventListener('click', async () => {
     const audioDest = audioCtx.createMediaStreamDestination();
     src.connect(audioDest);
 
-    /* Połącz strumienie */
+    /* MediaRecorder */
     const videoStream = ac.captureStream(24);
     const combined    = new MediaStream([
       ...videoStream.getVideoTracks(),
       ...audioDest.stream.getAudioTracks(),
     ]);
-
     const recorder = new MediaRecorder(combined, { mimeType: mime });
     const chunks   = [];
+    recorder.ondataavailable = e => { if (e.data && e.data.size > 0) chunks.push(e.data); };
 
-    recorder.ondataavailable = e => {
-      if (e.data && e.data.size > 0) chunks.push(e.data);
-    };
+    /* Opakuj onstop w Promise — await-ujemy zamiast polegać na callbacku */
+    const recordingDone = new Promise((resolve, reject) => {
+      recorder.onstop   = () => {
+        if (chunks.length === 0) reject(new Error('Brak danych nagrania.'));
+        else resolve(new Blob(chunks, { type: mime }));
+      };
+      recorder.onerror  = e => reject(new Error('Błąd MediaRecorder: ' + (e.error?.message || e)));
+    });
 
-    /* onstop — zawsze resetuje przycisk, łapie wszystkie błędy */
-    recorder.onstop = () => {
-      clearTimeout(fallback);
-      running = false;
-      try {
-        try { audioCtx.close(); } catch {}
-        if (chunks.length === 0) throw new Error('Brak danych — nagrywanie nie powiodło się.');
-        const blob = new Blob(chunks, { type: mime });
-        showMediaModal(URL.createObjectURL(blob), 'video', getSlug());
-      } catch(e) {
-        alert('Błąd zapisu wideo:\n' + e.message);
-      } finally {
-        btn.disabled    = false;
-        btn.textContent = '▶ Wideo + dźwięk';
-      }
-    };
-
-    /* Fallback — jeśli onstop nie odpali w ciągu 4s po stopie */
-    let fallback = setTimeout(() => {
-      if (btn.disabled) {
-        running = false;
-        try { audioCtx.close(); } catch {}
-        alert('Przekroczono czas oczekiwania na finalizację nagrania.\nSpróbuj w Chrome na desktopie.');
-        btn.disabled    = false;
-        btn.textContent = '▶ Wideo + dźwięk';
-      }
-    }, AUDIO_DURATION_MS + 5000);
-
-    /* Animacja — żyje aż do running=false (przez onstop lub fallback) */
-    let running = true;
-    const t0    = performance.now();
-
-    recorder.start(200); // zbieraj dane co 200ms
-    src.start();
-
-    const loop = () => {
-      if (!running) return;
-      const elapsed = performance.now() - t0;
-      drawAnimFrame(ctx, base, (elapsed / 1000) % 60, scale, pad);
-      btn.textContent = elapsed < AUDIO_DURATION_MS
-        ? `▶ Nagrywanie... ${(elapsed / 1000).toFixed(1)}s`
+    /* Pętla animacji — działa niezależnie przez requestAnimationFrame */
+    animActive    = true;
+    const t0      = performance.now();
+    const animLoop = () => {
+      if (!animActive) return;
+      const el = performance.now() - t0;
+      try { drawAnimFrame(ctx, base, el / 1000, scale, pad, AUDIO_DURATION_MS / 1000); } catch {}
+      btn.textContent = el < AUDIO_DURATION_MS
+        ? `▶ Nagrywanie... ${(el / 1000).toFixed(1)}s`
         : '▶ Finalizowanie...';
-      requestAnimationFrame(loop);
+      requestAnimationFrame(animLoop);
     };
-    requestAnimationFrame(loop);
 
-    /* Zatrzymaj po czasie trwania audio + bufor */
-    setTimeout(() => {
-      try { src.stop(); } catch {}
-      recorder.stop();
-    }, AUDIO_DURATION_MS + 400);
+    /* START */
+    recorder.start(200);
+    src.start();
+    requestAnimationFrame(animLoop);
+
+    /* Czekaj na koniec nagrania (async funkcja wstrzymana, animLoop dalej chodzi) */
+    await new Promise(r => setTimeout(r, AUDIO_DURATION_MS + 400));
+
+    /* Zatrzymaj audio i recorder */
+    animActive = false;
+    try { src.stop(); } catch {}
+    recorder.stop();
+
+    /* Czekaj na onstop — lub timeout po 6s */
+    const blob = await Promise.race([
+      recordingDone,
+      new Promise((_, rej) =>
+        setTimeout(() => rej(new Error('Timeout (6s) — nagrywanie nie zakończyło się.\nSpróbuj w Chrome na desktopie.')), 6000)
+      ),
+    ]);
+
+    showMediaModal(URL.createObjectURL(blob), 'video', getSlug());
 
   } catch(e) {
     alert('Błąd wideo:\n' + e.message);
+  } finally {
+    animActive = false;
+    if (audioCtx) try { audioCtx.close(); } catch {}
     btn.disabled    = false;
     btn.textContent = '▶ Wideo + dźwięk';
   }
