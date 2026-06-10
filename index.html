@@ -1353,15 +1353,6 @@ function resetSheet() {
   var artRows = document.querySelectorAll('.art-item');
   for (var a = 0; a < artRows.length; a++) { artRows[a].querySelector('.art-nm').value=''; artRows[a].querySelector('.art-em').value=''; artRows[a].querySelector('.art-vl').value=''; }
   syncWYR(); prevLvl = 1; updateEXP();
-  // Clear quest
-  ['q-tytul','q-kogo','q-opis','q-nagroda'].forEach(function(id){
-    var el=document.getElementById(id); if(el) el.value='';
-  });
-  var qi=document.getElementById('quest-img');
-  if(qi){qi.src='';qi.style.display='none';}
-  var qp=document.getElementById('quest-img-placeholder');
-  if(qp) qp.style.display='';
-  questMode='text'; setQuestMode('text');
   // Clear portrait
   var pi = document.getElementById('portrait-img');
   if (pi) { pi.src = ''; pi.style.display = 'none'; }
@@ -1371,9 +1362,9 @@ function resetSheet() {
   ['z-nadawca','z-nagroda','z-tytul','z-opis'].forEach(function(f){
     var el=document.getElementById(f); if(el) el.value='';
   });
-  var zi=document.getElementById('zlecenie-img-el'), zp=document.getElementById('zlecenie-img-ph');
+  var zi=document.getElementById('z-img-el'), zp=document.getElementById('z-img-ph');
   if(zi){zi.src='';zi.style.display='none';} if(zp) zp.style.display='';
-  zlecenieMode='text'; applyZlecenieMode();
+  zMode='text'; zApplyMode();
 }
 function confirmReset() {
   document.getElementById('reset-modal').classList.add('open');
@@ -1409,12 +1400,12 @@ function collectData() {
   var pImg = document.getElementById('portrait-img');
   d.portrait = (pImg && pImg.src && pImg.src.startsWith('data:')) ? pImg.src : '';
   // Quest / Zlecenie
-  d['z-mode']    = zlecenieMode;
+  d['z-mode']    = zMode;
   d['z-nadawca'] = (document.getElementById('z-nadawca')||{}).value || '';
   d['z-nagroda'] = (document.getElementById('z-nagroda')||{}).value || '';
   d['z-tytul']   = (document.getElementById('z-tytul')||{}).value   || '';
   d['z-opis']    = (document.getElementById('z-opis')||{}).value     || '';
-  var zi = document.getElementById('zlecenie-img-el');
+  var zi = document.getElementById('z-img-el');
   d['z-img'] = (zi && zi.src && zi.src.startsWith('data:')) ? zi.src : '';
   return d;
 }
@@ -1436,24 +1427,10 @@ function applyData(d) {
   if (d.stres != null) setTracker(document.getElementById('tr-stres'), parseInt(d.stres), 9);
   if (d.inst != null) setInstynkt(parseInt(d.inst));
   // Restore quest
-  if (d.questMode) { questMode = d.questMode; setQuestMode(d.questMode); }
-  if (d['q-tytul'])   document.getElementById('q-tytul').value   = d['q-tytul'];
-  if (d['q-kogo'])    document.getElementById('q-kogo').value    = d['q-kogo'];
-  if (d['q-opis'])    document.getElementById('q-opis').value    = d['q-opis'];
-  if (d['q-nagroda']) document.getElementById('q-nagroda').value = d['q-nagroda'];
-  if (d['q-img']) { setQuestMode('img'); setQuestImg(d['q-img']); }
   if (d.portrait) { setPortrait(d.portrait); } else {
     var pi=document.getElementById('portrait-img');
     if(pi){ pi.src=''; pi.style.display='none'; document.getElementById('portrait-placeholder').style.display=''; }
   }
-  // Quest
-  zlecenieMode = d['z-mode'] || 'text';
-  applyZlecenieMode();
-  var zFields = ['z-nadawca','z-nagroda','z-tytul','z-opis'];
-  zFields.forEach(function(f){ var el=document.getElementById(f); if(el) el.value=d[f]||''; });
-  var zi=document.getElementById('zlecenie-img-el'), zp=document.getElementById('zlecenie-img-ph');
-  if(d['z-img']){ if(zi){zi.src=d['z-img'];zi.style.display='block';} if(zp) zp.style.display='none'; }
-  else { if(zi){zi.src='';zi.style.display='none';} if(zp) zp.style.display=''; }
   if (!d.portrait) {
     var pi=document.getElementById('portrait-img');
     if(pi){ pi.src=''; pi.style.display='none'; document.getElementById('portrait-placeholder').style.display=''; }
@@ -1646,18 +1623,7 @@ function buildDiscordMD() {
   }
 
   // Quest
-  if(d.questMode==='text' && (d['q-tytul']||d['q-kogo']||d['q-opis'])) {
-    R.push('');
-    R.push(bar('AKTUALNE ZLECENIE'));
-    if(d['q-tytul'])   R.push('  Tytul:   ' + d['q-tytul']);
-    if(d['q-kogo'])    R.push('  Od kogo: ' + d['q-kogo']);
-    if(d['q-opis'])    { R.push('  Opis:'); d['q-opis'].split('\n').forEach(function(l){R.push('    '+l);}); }
-    if(d['q-nagroda']) R.push('  Nagroda: ' + d['q-nagroda']);
-  } else if(d.questMode==='img' && d['q-img']) {
-    R.push('');
-    R.push(bar('AKTUALNE ZLECENIE'));
-    R.push('  [obraz zlecenia - nie mozna eksportowac tekstowo]');
-  }
+
   if(d['f-blizny']){
     R.push('');
     R.push(bar('BLIZNY I OBRAZENIA'));
@@ -2801,16 +2767,6 @@ function admResetChangelogSeen() {
 }
 
 /* ─── ZLECENIE ───────────────────────────────── */
-var questMode = 'text';
-
-function setQuestMode(mode) {
-  questMode = mode;
-  document.getElementById('quest-text-mode').style.display = mode==='text' ? '' : 'none';
-  document.getElementById('quest-img-mode').style.display  = mode==='img'  ? '' : 'none';
-  document.getElementById('qbtn-text').classList.toggle('active', mode==='text');
-  document.getElementById('qbtn-img').classList.toggle('active', mode==='img');
-  save();
-}
 
 function questImgClick() {
   document.getElementById('quest-img-input').click();
@@ -2852,80 +2808,6 @@ function deleteQuestImg(e) {
   var imgEl = document.getElementById('quest-img');
   imgEl.src = ''; imgEl.style.display = 'none';
   document.getElementById('quest-img-placeholder').style.display = '';
-  save();
-}
-
-
-/* ─── ZLECENIE (Quest) ───────────────────────── */
-var zlecenieMode = 'text'; // 'text' or 'img'
-
-function initZlecenie() {
-  // Set current date in PDA header
-  var now = new Date();
-  var dd = String(now.getDate()).padStart(2,'0');
-  var mm = String(now.getMonth()+1).padStart(2,'0');
-  var yy = now.getFullYear();
-  var hh = String(now.getHours()).padStart(2,'0');
-  var mi = String(now.getMinutes()).padStart(2,'0');
-  var el = document.getElementById('pda-date');
-  if (el) el.textContent = dd+'.'+mm+'.'+yy+' '+hh+':'+mi;
-}
-
-function toggleZlecenieMode() {
-  zlecenieMode = zlecenieMode === 'text' ? 'img' : 'text';
-  applyZlecenieMode();
-  save();
-}
-
-function applyZlecenieMode() {
-  var txtDiv = document.getElementById('zlecenie-text');
-  var imgDiv = document.getElementById('zlecenie-img');
-  var btn    = document.getElementById('pda-mode-btn');
-  if (zlecenieMode === 'text') {
-    txtDiv.style.display = '';
-    imgDiv.style.display = 'none';
-    if (btn) btn.textContent = '\uD83D\uDCF7 Tryb: tekst';
-  } else {
-    txtDiv.style.display = 'none';
-    imgDiv.style.display = '';
-    if (btn) btn.textContent = '\u270F Tryb: obraz';
-  }
-}
-
-function zlecenieImgClick() {
-  document.getElementById('zlecenie-img-input').click();
-}
-
-function handleZlecenieImg(input) {
-  var file = input.files[0]; input.value = '';
-  if (!file || !file.type.startsWith('image/')) return;
-  var img = new Image();
-  var url = URL.createObjectURL(file);
-  img.onload = function() {
-    URL.revokeObjectURL(url);
-    // Scale to max 900px wide, keep aspect ratio
-    var maxW = 900;
-    var w = Math.min(img.width, maxW);
-    var h = Math.round(img.height * (w / img.width));
-    var canvas = document.createElement('canvas');
-    canvas.width = w; canvas.height = h;
-    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-    var b64 = canvas.toDataURL('image/jpeg', 0.82);
-    var el = document.getElementById('zlecenie-img-el');
-    var ph = document.getElementById('zlecenie-img-ph');
-    el.src = b64; el.style.display = 'block';
-    if (ph) ph.style.display = 'none';
-    save();
-  };
-  img.src = url;
-}
-
-function deleteZlecenieImg(e) {
-  e.stopPropagation();
-  var el = document.getElementById('zlecenie-img-el');
-  var ph = document.getElementById('zlecenie-img-ph');
-  el.src = ''; el.style.display = 'none';
-  if (ph) ph.style.display = '';
   save();
 }
 
