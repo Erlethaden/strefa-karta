@@ -264,6 +264,34 @@ body{background:#040604;color:var(--t2);font-family:'Share Tech Mono',monospace;
 #nick-error{font-size:10px;color:var(--r3);min-height:14px;margin-top:4px}
 #nick-modal .modal-note{font-size:10px;color:var(--t0);margin-top:8px;line-height:1.6}
 
+/* ── ZLECENIE ────────────────────────────────── */
+.quest-mode-btns{display:flex;gap:6px;margin-bottom:8px}
+.quest-mode-btn{background:none;border:1px solid var(--g1);color:var(--t0);
+  font-family:'Share Tech Mono',monospace;font-size:10px;padding:3px 10px;cursor:pointer;transition:.2s}
+.quest-mode-btn.active{border-color:var(--g2);color:var(--g3)}
+.quest-fields{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px}
+.quest-field{display:flex;flex-direction:column;gap:3px}
+.quest-lbl{font-size:9px;color:var(--t0);letter-spacing:1px}
+.quest-inp{background:var(--bg);border:none;border-bottom:1px solid var(--g1);
+  color:var(--t2);font-family:'Share Tech Mono',monospace;font-size:11px;
+  padding:3px 0;width:100%}
+.quest-inp:focus{border-bottom-color:var(--g2);outline:none}
+.quest-desc{grid-column:1/-1}
+.quest-img-wrap{
+  width:100%;max-height:220px;border:1px solid var(--g1);
+  display:flex;align-items:center;justify-content:center;
+  cursor:pointer;overflow:hidden;position:relative;min-height:80px;
+  background:var(--bg);transition:border-color .2s;
+}
+.quest-img-wrap:hover{border-color:var(--g2)}
+.quest-img-wrap img{max-width:100%;max-height:220px;object-fit:contain;display:block}
+.quest-img-placeholder{color:var(--t0);font-size:11px;letter-spacing:1px;text-align:center;padding:20px}
+.quest-img-del{position:absolute;top:4px;right:4px;background:rgba(0,0,0,.7);
+  border:none;color:var(--r3);font-size:10px;cursor:pointer;padding:2px 6px;
+  font-family:'Share Tech Mono',monospace;display:none}
+.quest-img-wrap:hover .quest-img-del{display:block}
+@media(max-width:560px){.quest-fields{grid-template-columns:1fr}}
+
 /* ── PORTRAIT ──────────────────────────────── */
 .portrait-wrap{
   width:120px;height:120px;flex-shrink:0;
@@ -371,6 +399,123 @@ body{background:#040604;color:var(--t2);font-family:'Share Tech Mono',monospace;
 .gd-ce{color:var(--t0)}
 @media(max-width:500px){.gd-grid,.gd-sk-grid{grid-template-columns:1fr}}
 
+
+/* ── PDA TERMINAL (Zlecenie) ─────────────────── */
+.pda-terminal{
+  background:#050805;border:1px solid var(--g1);
+  font-family:'Share Tech Mono',monospace;font-size:11px;
+  overflow:hidden;
+}
+.pda-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:5px 10px;border-bottom:1px solid var(--g1);
+  font-size:10px;letter-spacing:1px;
+}
+.pda-hdr-left{display:flex;align-items:center;gap:6px}
+.pda-dot-grn{color:var(--g2);font-size:14px;line-height:1}
+.pda-dot-amb{color:var(--a2);font-size:14px;line-height:1}
+.pda-nowa{color:var(--t1);letter-spacing:2px}
+.pda-date{color:var(--t0);font-size:9px}
+.pda-cols{display:grid;grid-template-columns:38% 62%;min-height:110px}
+.pda-left{
+  padding:10px;border-right:1px solid var(--g1);
+  display:flex;flex-direction:column;gap:2px;
+}
+.pda-right{padding:10px;display:flex;flex-direction:column;gap:4px}
+.pda-lbl{font-size:9px;color:var(--t0);letter-spacing:2px;margin-bottom:2px}
+.pda-input{
+  background:transparent;border:none;border-bottom:1px solid var(--g1);
+  color:var(--t2);font-family:'Share Tech Mono',monospace;font-size:11px;
+  width:100%;padding:2px 0;outline:none;
+}
+.pda-input:focus{border-bottom-color:var(--g2)}
+.pda-input::placeholder{color:var(--t0)}
+.pda-mission-hdr{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.pda-mission-lbl{font-size:9px;color:var(--a2);letter-spacing:2px}
+.pda-title-inp{
+  background:transparent;border:none;border-bottom:1px solid var(--g1);
+  color:var(--g3);font-family:'Share Tech Mono',monospace;font-size:14px;
+  font-weight:bold;letter-spacing:1px;width:100%;padding:2px 0;outline:none;
+}
+.pda-title-inp:focus{border-bottom-color:var(--g2)}
+.pda-title-inp::placeholder{color:var(--t0);font-size:11px}
+.pda-div{border:none;border-top:1px solid var(--g1);margin:4px 0}
+.pda-opis-inp{
+  background:transparent;border:none;
+  color:var(--t2);font-family:'Share Tech Mono',monospace;font-size:10px;
+  width:100%;resize:none;outline:none;line-height:1.6;
+  min-height:60px;padding:2px 0;
+}
+.pda-opis-inp::placeholder{color:var(--t0)}
+.pda-img-wrap{
+  position:relative;cursor:pointer;min-height:80px;
+  background:#050805;border:1px dashed var(--g1);
+  display:flex;align-items:center;justify-content:center;
+  transition:border-color .2s;overflow:hidden;
+}
+.pda-img-wrap:hover{border-color:var(--g2)}
+.pda-img-wrap img{width:100%;height:auto;display:block}
+.pda-img-ph{
+  font-size:10px;color:var(--t0);letter-spacing:1px;text-align:center;padding:20px;
+}
+.pda-img-del{
+  position:absolute;top:6px;right:6px;background:rgba(0,0,0,.8);
+  border:1px solid var(--r2);color:var(--r3);font-family:'Share Tech Mono',monospace;
+  font-size:10px;cursor:pointer;padding:2px 6px;display:none;
+}
+.pda-img-wrap:hover .pda-img-del{display:block}
+.pda-mode-toggle{
+  background:none;border:1px solid var(--g1);color:var(--t0);
+  font-family:'Share Tech Mono',monospace;font-size:9px;
+  padding:2px 8px;cursor:pointer;letter-spacing:1px;float:right;
+  transition:.2s;margin-top:-2px;
+}
+.pda-mode-toggle:hover{border-color:var(--g2);color:var(--g3)}
+@media(max-width:560px){
+  .pda-cols{grid-template-columns:1fr}
+  .pda-left{border-right:none;border-bottom:1px solid var(--g1)}
+}
+
+/* ── PDA TERMINAL (Zlecenie) ─────────────────── */
+.pda-wrap{background:#040a03;border:1px solid var(--g1);overflow:hidden;font-family:'Share Tech Mono',monospace}
+.pda-hdr{display:flex;align-items:center;justify-content:space-between;padding:5px 10px;border-bottom:1px solid var(--g1);font-size:10px}
+.pda-hdr-l{display:flex;align-items:center;gap:6px}
+.pda-dot-g{color:var(--g2);font-size:14px;line-height:1}
+.pda-dot-a{color:var(--a2);font-size:14px;line-height:1}
+.pda-nowa{color:var(--t1);letter-spacing:2px}
+.pda-ts{color:var(--t0);font-size:9px}
+.pda-cols{display:grid;grid-template-columns:38% 62%;min-height:100px}
+.pda-left{padding:10px;border-right:1px solid var(--g1);display:flex;flex-direction:column;gap:2px}
+.pda-right{padding:10px;display:flex;flex-direction:column;gap:4px}
+.pda-lbl{font-size:9px;color:var(--t0);letter-spacing:2px;margin-bottom:2px}
+.pda-inp{background:transparent;border:none;border-bottom:1px solid var(--g1);color:var(--t2);
+  font-family:'Share Tech Mono',monospace;font-size:11px;width:100%;padding:2px 0;outline:none}
+.pda-inp:focus{border-bottom-color:var(--g2)}
+.pda-inp::placeholder{color:var(--t0)}
+.pda-mhdr{display:flex;align-items:center;gap:6px;margin-bottom:4px}
+.pda-mlbl{font-size:9px;color:var(--a2);letter-spacing:2px}
+.pda-title{background:transparent;border:none;border-bottom:1px solid var(--g1);color:var(--g3);
+  font-family:'Share Tech Mono',monospace;font-size:14px;font-weight:bold;letter-spacing:1px;
+  width:100%;padding:2px 0;outline:none;text-transform:uppercase}
+.pda-title:focus{border-bottom-color:var(--g2)}
+.pda-title::placeholder{color:var(--t0);font-size:10px;text-transform:none}
+.pda-div{border:none;border-top:1px solid var(--g1);margin:4px 0}
+.pda-desc{background:transparent;border:none;color:var(--t2);font-family:'Share Tech Mono',monospace;
+  font-size:10px;width:100%;resize:none;outline:none;line-height:1.6;min-height:56px;padding:2px 0}
+.pda-desc::placeholder{color:var(--t0)}
+.pda-img-zone{position:relative;cursor:pointer;background:#040a03;border:1px dashed var(--g1);
+  display:flex;align-items:center;justify-content:center;transition:.2s;overflow:hidden}
+.pda-img-zone:hover{border-color:var(--g2)}
+.pda-img-zone img{width:100%;height:auto;display:block}
+.pda-img-ph{font-size:10px;color:var(--t0);letter-spacing:1px;text-align:center;padding:20px}
+.pda-img-del{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.8);border:1px solid var(--r1);
+  color:var(--r3);font-family:'Share Tech Mono',monospace;font-size:9px;cursor:pointer;
+  padding:2px 6px;display:none}
+.pda-img-zone:hover .pda-img-del{display:block}
+.pda-mode-btn{background:none;border:1px solid var(--bd2);color:var(--t0);font-family:'Share Tech Mono',monospace;
+  font-size:9px;padding:2px 8px;cursor:pointer;letter-spacing:1px;transition:.2s;float:right;margin-top:-2px}
+.pda-mode-btn:hover{border-color:var(--g2);color:var(--g3)}
+@media(max-width:560px){.pda-cols{grid-template-columns:1fr}.pda-left{border-right:none;border-bottom:1px solid var(--g1)}}
 /* ── WARNING STRIP ──────────────────────────────── */
 #warn-strip{max-width:1140px;margin:0 auto;display:none;align-items:center;gap:0;flex-wrap:wrap;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;border-bottom:1px solid transparent;overflow:hidden}
 #warn-strip.ws-a{display:flex;background:rgba(122,84,16,.35);border-color:var(--a2)}
@@ -637,6 +782,136 @@ html{background:#040604;scrollbar-width:thin;scrollbar-color:var(--g1) var(--bg2
     </div>
   </div>
 
+  <div class="sec" id="sec-zlecenie" style="margin-bottom:12px">
+    <div class="stitle">Aktualne Zlecenie</div>
+    <div class="quest-mode-btns">
+      <button class="quest-mode-btn active" id="qbtn-text" onclick="setQuestMode('text')">&#128221; Opis</button>
+      <button class="quest-mode-btn"        id="qbtn-img"  onclick="setQuestMode('img')">&#128444; Obraz</button>
+    </div>
+    <!-- Text mode -->
+    <div id="quest-text-mode">
+      <div class="quest-fields">
+        <div class="quest-field">
+          <span class="quest-lbl">TYTUŁ</span>
+          <input class="quest-inp" id="q-tytul" placeholder="Nazwa zlecenia...">
+        </div>
+        <div class="quest-field">
+          <span class="quest-lbl">OD KOGO</span>
+          <input class="quest-inp" id="q-kogo" placeholder="Zleceniodawca...">
+        </div>
+        <div class="quest-field quest-desc">
+          <span class="quest-lbl">OPIS</span>
+          <textarea class="quest-inp notes-ta" id="q-opis" placeholder="Treść zlecenia..." style="min-height:60px;resize:vertical"></textarea>
+        </div>
+        <div class="quest-field">
+          <span class="quest-lbl">NAGRODA (opcjonalna)</span>
+          <input class="quest-inp" id="q-nagroda" placeholder="Ruble, przedmioty, info...">
+        </div>
+      </div>
+    </div>
+    <!-- Image mode -->
+    <div id="quest-img-mode" style="display:none">
+      <div class="quest-img-wrap" id="quest-img-wrap" onclick="questImgClick()" title="Kliknij aby dodać obraz zlecenia">
+        <div class="quest-img-placeholder" id="quest-img-placeholder">&#128444; Kliknij aby dodać obraz zlecenia<br><span style="font-size:9px;color:var(--t0)">(zdjęcie kartki, screenshota itp.)</span></div>
+        <img id="quest-img" src="" alt="" style="display:none">
+        <button class="quest-img-del" onclick="deleteQuestImg(event)" title="Usuń obraz">✕</button>
+      </div>
+      <input type="file" id="quest-img-input" accept="image/*" style="display:none" onchange="handleQuestImgFile(this)">
+    </div>
+  </div>
+
+
+  <!-- ZLECENIE SECTION -->
+  <div class="sec" id="sec-zlecenie" style="margin-bottom:10px">
+    <div class="stitle">
+      Aktualne Zlecenie
+      <button class="pda-mode-toggle" id="pda-mode-btn" onclick="toggleZlecenieMode()">&#128247; Tryb: tekst</button>
+    </div>
+
+    <!-- TEXT MODE -->
+    <div id="zlecenie-text">
+      <div class="pda-terminal">
+        <div class="pda-hdr">
+          <div class="pda-hdr-left">
+            <span class="pda-dot-grn">&#9679;</span>
+            <span class="pda-nowa">NOWA WIADOMOSC</span>
+          </div>
+          <span class="pda-date" id="pda-date"></span>
+        </div>
+        <div class="pda-cols">
+          <div class="pda-left">
+            <div class="pda-lbl">NADAWCA</div>
+            <input class="pda-input" id="z-nadawca" placeholder="...">
+            <div class="pda-lbl" style="margin-top:12px">NAGRODA</div>
+            <input class="pda-input" id="z-nagroda" placeholder="opcjonalne">
+          </div>
+          <div class="pda-right">
+            <div class="pda-mission-hdr">
+              <span class="pda-dot-amb">&#9679;</span>
+              <span class="pda-mission-lbl">ZLECENIE ZADANIA</span>
+            </div>
+            <input class="pda-title-inp" id="z-tytul" placeholder="TYTUL ZLECENIA">
+            <hr class="pda-div">
+            <textarea class="pda-opis-inp" id="z-opis" placeholder="Opis zlecenia..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- IMAGE MODE -->
+    <div id="zlecenie-img" style="display:none">
+      <div class="pda-img-wrap" onclick="zlecenieImgClick()">
+        <img id="zlecenie-img-el" src="" alt="" style="display:none">
+        <div class="pda-img-ph" id="zlecenie-img-ph">
+          &#128247; Kliknij aby dodac obraz zlecenia
+        </div>
+        <button class="pda-img-del" onclick="deleteZlecenieImg(event)">&#x2715; Usun</button>
+      </div>
+      <input type="file" id="zlecenie-img-input" accept="image/*" style="display:none" onchange="handleZlecenieImg(this)">
+    </div>
+  </div>
+
+
+  <!-- ZLECENIE -->
+  <div class="sec" style="margin-bottom:10px" id="sec-zlecenie">
+    <div class="stitle">
+      Aktualne Zlecenie
+      <button class="pda-mode-btn" id="pda-mode-btn" onclick="zToggleMode()">&#128247; tryb: tekst</button>
+    </div>
+
+    <div id="z-text-mode">
+      <div class="pda-wrap">
+        <div class="pda-hdr">
+          <div class="pda-hdr-l"><span class="pda-dot-g">&#9679;</span><span class="pda-nowa">NOWA WIADOMOSC</span></div>
+          <span class="pda-ts" id="pda-ts"></span>
+        </div>
+        <div class="pda-cols">
+          <div class="pda-left">
+            <div class="pda-lbl">NADAWCA</div>
+            <input class="pda-inp" id="z-nadawca" placeholder="...">
+            <div class="pda-lbl" style="margin-top:10px">NAGRODA</div>
+            <input class="pda-inp" id="z-nagroda" placeholder="opcjonalne">
+          </div>
+          <div class="pda-right">
+            <div class="pda-mhdr"><span class="pda-dot-a">&#9679;</span><span class="pda-mlbl">ZLECENIE ZADANIA</span></div>
+            <input class="pda-title" id="z-tytul" placeholder="Tytuł zlecenia...">
+            <hr class="pda-div">
+            <textarea class="pda-desc" id="z-opis" placeholder="Opis zlecenia..."></textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="z-img-mode" style="display:none">
+      <div class="pda-img-zone" onclick="zImgClick()" style="min-height:80px">
+        <img id="z-img-el" src="" alt="" style="display:none">
+        <div class="pda-img-ph" id="z-img-ph">&#128247; Kliknij aby dodać obraz zlecenia</div>
+        <button class="pda-img-del" onclick="zImgDel(event)">&#x2715; Usuń</button>
+      </div>
+      <input type="file" id="z-img-input" accept="image/*" style="display:none" onchange="zImgLoad(this)">
+    </div>
+  </div>
+
   <div class="bottom-grid" id="bottom-sec">
     <div class="sec" id="sec-blizny">
       <div class="stitle">Blizny i Obrazenia</div>
@@ -780,6 +1055,37 @@ function loadCharList() {
                  lastMod: d.data().lastModified, charData: d.data().charData };
       });
       rebuildCharSelect();
+      // Auto-dopasuj lub wybierz pierwszą postać z listy
+      if (!currentCharId && charCache.length > 0) {
+        // Najpierw spróbuj dopasować po pseudonimie z localStorage
+        var matched = false;
+        try {
+          var lRaw = localStorage.getItem(SAVE_KEY);
+          if (lRaw) {
+            var lPseudo = (JSON.parse(lRaw)['f-pseudo'] || '').trim();
+            if (lPseudo) {
+              for (var mi = 0; mi < charCache.length; mi++) {
+                if (charCache[mi].pseudonim === lPseudo) {
+                  currentCharId = charCache[mi].id;
+                  document.getElementById('char-select').value = currentCharId;
+                  document.getElementById('btn-delete-char').style.display = 'inline-block';
+                  setCloudStatus('zsynchronizowano', 'g');
+                  matched = true;
+                  break;
+                }
+              }
+            }
+          }
+        } catch(e2) {}
+        // Jeśli brak dopasowania — załaduj pierwszą postać z listy (najnowszą)
+        if (!matched) {
+          currentCharId = charCache[0].id;
+          document.getElementById('char-select').value = currentCharId;
+          document.getElementById('btn-delete-char').style.display = 'inline-block';
+          if (charCache[0].charData) applyData(charCache[0].charData);
+          setCloudStatus('zsynchronizowano', 'g');
+        }
+      }
     })
     .catch(function(e) { setCloudStatus('blad: ' + e.code, 'r'); });
 }
@@ -860,7 +1166,10 @@ function cloudSave() {
     // localStorage zapisuje zawsze niezaleznie od tego.
     if (!pseudo) { setCloudStatus('', ''); return; }
     if (!currentCharId) {
-      currentCharId = fbDB.collection('users').doc(fbUser.uid).collection('characters').doc().id;
+      // Nie twórz nowego ID automatycznie — zapobiega duplikatom.
+      // Użytkownik musi wybrać postać z listy lub kliknąć "+ Nowa".
+      setCloudStatus('↑ wybierz lub stwórz postać', 'a');
+      return;
     }
     setCloudStatus('...', 'a');
     fbDB.collection('users').doc(fbUser.uid).collection('characters').doc(currentCharId)
@@ -1128,11 +1437,27 @@ function resetSheet() {
   var artRows = document.querySelectorAll('.art-item');
   for (var a = 0; a < artRows.length; a++) { artRows[a].querySelector('.art-nm').value=''; artRows[a].querySelector('.art-em').value=''; artRows[a].querySelector('.art-vl').value=''; }
   syncWYR(); prevLvl = 1; updateEXP();
+  // Clear quest
+  ['q-tytul','q-kogo','q-opis','q-nagroda'].forEach(function(id){
+    var el=document.getElementById(id); if(el) el.value='';
+  });
+  var qi=document.getElementById('quest-img');
+  if(qi){qi.src='';qi.style.display='none';}
+  var qp=document.getElementById('quest-img-placeholder');
+  if(qp) qp.style.display='';
+  questMode='text'; setQuestMode('text');
   // Clear portrait
   var pi = document.getElementById('portrait-img');
   if (pi) { pi.src = ''; pi.style.display = 'none'; }
   var pp = document.getElementById('portrait-placeholder');
   if (pp) pp.style.display = '';
+  // Clear quest
+  ['z-nadawca','z-nagroda','z-tytul','z-opis'].forEach(function(f){
+    var el=document.getElementById(f); if(el) el.value='';
+  });
+  var zi=document.getElementById('zlecenie-img-el'), zp=document.getElementById('zlecenie-img-ph');
+  if(zi){zi.src='';zi.style.display='none';} if(zp) zp.style.display='';
+  zlecenieMode='text'; applyZlecenieMode();
 }
 function confirmReset() {
   document.getElementById('reset-modal').classList.add('open');
@@ -1167,6 +1492,14 @@ function collectData() {
   for (var a = 0; a < artRows.length; a++) d.art.push({n:artRows[a].querySelector('.art-nm').value, e:artRows[a].querySelector('.art-em').value, v:artRows[a].querySelector('.art-vl').value});
   var pImg = document.getElementById('portrait-img');
   d.portrait = (pImg && pImg.src && pImg.src.startsWith('data:')) ? pImg.src : '';
+  // Quest / Zlecenie
+  d['z-mode']    = zlecenieMode;
+  d['z-nadawca'] = (document.getElementById('z-nadawca')||{}).value || '';
+  d['z-nagroda'] = (document.getElementById('z-nagroda')||{}).value || '';
+  d['z-tytul']   = (document.getElementById('z-tytul')||{}).value   || '';
+  d['z-opis']    = (document.getElementById('z-opis')||{}).value     || '';
+  var zi = document.getElementById('zlecenie-img-el');
+  d['z-img'] = (zi && zi.src && zi.src.startsWith('data:')) ? zi.src : '';
   return d;
 }
 var saveTimer;
@@ -1186,7 +1519,26 @@ function applyData(d) {
   if (d.rad != null) setTracker(document.getElementById('tr-rad'), parseInt(d.rad), 9);
   if (d.stres != null) setTracker(document.getElementById('tr-stres'), parseInt(d.stres), 9);
   if (d.inst != null) setInstynkt(parseInt(d.inst));
+  // Restore quest
+  if (d.questMode) { questMode = d.questMode; setQuestMode(d.questMode); }
+  if (d['q-tytul'])   document.getElementById('q-tytul').value   = d['q-tytul'];
+  if (d['q-kogo'])    document.getElementById('q-kogo').value    = d['q-kogo'];
+  if (d['q-opis'])    document.getElementById('q-opis').value    = d['q-opis'];
+  if (d['q-nagroda']) document.getElementById('q-nagroda').value = d['q-nagroda'];
+  if (d['q-img']) { setQuestMode('img'); setQuestImg(d['q-img']); }
   if (d.portrait) { setPortrait(d.portrait); } else {
+    var pi=document.getElementById('portrait-img');
+    if(pi){ pi.src=''; pi.style.display='none'; document.getElementById('portrait-placeholder').style.display=''; }
+  }
+  // Quest
+  zlecenieMode = d['z-mode'] || 'text';
+  applyZlecenieMode();
+  var zFields = ['z-nadawca','z-nagroda','z-tytul','z-opis'];
+  zFields.forEach(function(f){ var el=document.getElementById(f); if(el) el.value=d[f]||''; });
+  var zi=document.getElementById('zlecenie-img-el'), zp=document.getElementById('zlecenie-img-ph');
+  if(d['z-img']){ if(zi){zi.src=d['z-img'];zi.style.display='block';} if(zp) zp.style.display='none'; }
+  else { if(zi){zi.src='';zi.style.display='none';} if(zp) zp.style.display=''; }
+  if (!d.portrait) {
     var pi=document.getElementById('portrait-img');
     if(pi){ pi.src=''; pi.style.display='none'; document.getElementById('portrait-placeholder').style.display=''; }
   }
@@ -1195,6 +1547,14 @@ function applyData(d) {
   if (d.bp) { var bpR = document.querySelectorAll('.bp-item'); for (var b2=0;b2<bpR.length&&b2<d.bp.length;b2++) { bpR[b2].querySelector('.bp-sel').value=d.bp[b2].t||'--'; bpR[b2].querySelector('.bp-nm').value=d.bp[b2].n||''; bpR[b2].querySelector('.bp-vl').value=d.bp[b2].v||''; } }
   if (d.art) { var artR = document.querySelectorAll('.art-item'); for (var a2=0;a2<artR.length&&a2<d.art.length;a2++) { artR[a2].querySelector('.art-nm').value=d.art[a2].n||''; artR[a2].querySelector('.art-em').value=d.art[a2].e||''; artR[a2].querySelector('.art-vl').value=d.art[a2].v||''; } }
   syncWYR(); prevLvl = calcLevel(parseInt(document.getElementById('f-exp').value)||0).lvl; updateEXP(); updateWarnings();
+  // Quest
+  zMode = d['z-mode'] || 'text'; zApplyMode();
+  ['z-nadawca','z-nagroda','z-tytul','z-opis'].forEach(function(f){
+    var el=document.getElementById(f); if(el) el.value=d[f]||'';
+  });
+  var zi=document.getElementById('z-img-el'), zp=document.getElementById('z-img-ph');
+  if(d['z-img']&&zi){ zi.src=d['z-img']; zi.style.display='block'; if(zp) zp.style.display='none'; }
+  else if(zi){ zi.src=''; zi.style.display='none'; if(zp) zp.style.display=''; }
 }
 function load() {
   var raw = localStorage.getItem(SAVE_KEY);
@@ -1369,6 +1729,19 @@ function buildDiscordMD() {
     else{ R.push('  '+(ai+1)+'. '+p(art.n,22)+'  Em:'+(art.e||'___')+(art.v?' ['+art.v+' RU]':'')); }
   }
 
+  // Quest
+  if(d.questMode==='text' && (d['q-tytul']||d['q-kogo']||d['q-opis'])) {
+    R.push('');
+    R.push(bar('AKTUALNE ZLECENIE'));
+    if(d['q-tytul'])   R.push('  Tytul:   ' + d['q-tytul']);
+    if(d['q-kogo'])    R.push('  Od kogo: ' + d['q-kogo']);
+    if(d['q-opis'])    { R.push('  Opis:'); d['q-opis'].split('\n').forEach(function(l){R.push('    '+l);}); }
+    if(d['q-nagroda']) R.push('  Nagroda: ' + d['q-nagroda']);
+  } else if(d.questMode==='img' && d['q-img']) {
+    R.push('');
+    R.push(bar('AKTUALNE ZLECENIE'));
+    R.push('  [obraz zlecenia - nie mozna eksportowac tekstowo]');
+  }
   if(d['f-blizny']){
     R.push('');
     R.push(bar('BLIZNY I OBRAZENIA'));
@@ -1402,9 +1775,9 @@ function parseDiscordMD(text) {
 
   var lines = text.split('\n');
 
-  // Header: (R)  PSEUDO  *  FRAKCJA  (R)
+  // Header: ☢ PSEUDO · FRAKCJA ☢
   for(var i=0;i<lines.length;i++){
-    var hm=lines[i].match(/\(R\)\s+(.+?)\s+\*\s+(.+?)\s+\(R\)/);
+    var hm=lines[i].match(/☢\s+(.+?)\s+·\s+(.+?)\s+☢/);
     if(hm){ d['f-pseudo']=hm[1].trim(); d['f-frakcja']=hm[2].trim(); break; }
   }
 
@@ -1452,38 +1825,37 @@ function parseDiscordMD(text) {
   var inAmmoG=false, inAmmoB=false;
   for(var i=0;i<lines.length;i++){
     var l=lines[i];
-    // New format: G: name [typ] Obr:X  /  B: ...  /  BB: ...
-    if(/^\s+G:/.test(l)){
-      var rest=l.replace(/^\s+G:\s*/,'');
+    if(l.indexOf('Broń główna')>=0){
+      var rest=l.replace(/.*Broń główna\s+/,'');
       var tm=rest.match(/\[([^\]]+)\]/); if(tm){d['f-bron-g-typ']=tm[1]; rest=rest.replace(tm[0],'');}
       var om=rest.match(/Obr:([\S]+)/);   if(om){d['f-bron-g-obr']=om[1]; rest=rest.replace(om[0],'');}
       d['f-bron-g']=clean(rest); inAmmoG=true; inAmmoB=false;
-    } else if(/^\s+B:/.test(l)){
-      var rest=l.replace(/^\s+B:\s*/,'');
+    } else if(l.indexOf('Broń boczna')>=0){
+      var rest=l.replace(/.*Broń boczna\s+/,'');
       var om=rest.match(/Obr:([\S]+)/); if(om){d['f-bron-b-obr']=om[1]; rest=rest.replace(om[0],'');}
       d['f-bron-b']=clean(rest); inAmmoB=true; inAmmoG=false;
-    } else if(/^\s+BB:/.test(l)){
-      var rest=l.replace(/^\s+BB:\s*/,'');
+    } else if(l.indexOf('Broń biała')>=0){
+      var rest=l.replace(/.*Broń biała\s+/,'');
       var om=rest.match(/Obr:([\S]+)/); if(om){d['f-bron-bw-obr']=om[1]; rest=rest.replace(om[0],'');}
       d['f-bron-bw']=clean(rest); inAmmoG=false; inAmmoB=false;
-    } else if(l.indexOf('Ammo:')>=0){
+    } else if(l.indexOf('Amunicja:')>=0){
       var am=l.match(/(\d+)\s*\/\s*(\d+)/);
       if(am){
         if(inAmmoG){d['f-ammo-g-c']=am[1];d['f-ammo-g-m']=am[2];inAmmoG=false;}
         else if(inAmmoB){d['f-ammo-b-c']=am[1];d['f-ammo-b-m']=am[2];inAmmoB=false;}
       }
-    } else if(l.indexOf('Pancerz:')>=0){
-      var rest=l.replace(/.*Pancerz:\s*/,'');
-      var sm=rest.match(/([■□]{5})/);
-      if(sm){ for(var ci=0;ci<5;ci++) d.cbP[ci]=(sm[1][ci]==='■'); }
-      d['f-pancerz']=clean(rest.replace(/[■□]{5}.*/,''));
-    } else if(l.indexOf('Helm/Maska:')>=0){
-      var rest=l.replace(/.*Helm\/Maska:\s*/,'');
-      var sm=rest.match(/([■□]{5})/);
-      if(sm){ for(var ci=0;ci<5;ci++) d.cbH[ci]=(sm[1][ci]==='■'); }
-      d['f-helm']=clean(rest.replace(/[■□]{5}.*/,''));
-    } else if(l.indexOf('Detektor:')>=0){
-      d['f-detektor']=clean(l.replace(/.*Detektor:\s*/,''));
+    } else if(l.indexOf('Pancerz')>=0){
+      var rest=l.replace(/.*Pancerz\s+/,'');
+      var sm=rest.match(/Stan:\s*([■□\s]+)/);
+      if(sm){ var chars=sm[1].replace(/\s/g,''); for(var ci=0;ci<5;ci++) d.cbP[ci]=(chars[ci]==='■'); }
+      d['f-pancerz']=clean(rest.replace(/Stan:.*/,''));
+    } else if(l.indexOf('Hełm')>=0||l.indexOf('Helm')>=0){
+      var rest=l.replace(/.*[Hełm|Helm]\/Maska\s+/,'').replace(/.*Hełm\s+/,'');
+      var sm=rest.match(/Stan:\s*([■□\s]+)/);
+      if(sm){ var chars=sm[1].replace(/\s/g,''); for(var ci=0;ci<5;ci++) d.cbH[ci]=(chars[ci]==='■'); }
+      d['f-helm']=clean(rest.replace(/Stan:.*/,''));
+    } else if(l.indexOf('Detektor')>=0){
+      d['f-detektor']=clean(l.replace(/.*Detektor\s+/,''));
     }
   }
 
@@ -2201,9 +2573,23 @@ function admRenderRoster() {
 
 function admDeleteChar(charId) {
   if(!confirm('Usunąć postać z rostera?')) return;
-  fbDB.collection('roster').doc(charId).delete().then(function(){
+  // Find character data to also delete from user's collection
+  var char = admRosterData.find(function(c){ return c.id === charId; });
+  var del = fbDB.collection('roster').doc(charId).delete();
+  // Also delete from owner's characters collection if we know their uid
+  if (char && char.uid) {
+    del = del.then(function(){
+      return fbDB.collection('users').doc(char.uid).collection('characters').doc(charId).delete()
+        .catch(function(){}); // ignore if already gone
+    });
+  }
+  del.then(function(){
     admRosterData = admRosterData.filter(function(c){ return c.id!==charId; });
     admRenderRoster();
+    document.getElementById('adm-char-status').textContent = 'Usunięto';
+    setTimeout(function(){document.getElementById('adm-char-status').textContent='';},2000);
+  }).catch(function(e){
+    alert('Błąd usuwania: ' + e.message);
   });
 }
 
@@ -2344,6 +2730,201 @@ function admSetRole(uid, roleKey, value) {
     .catch(function(e){ alert('Błąd zapisu roli: '+e.message); });
 }
 
+
+/* ─── ZLECENIE ───────────────────────────────── */
+var questMode = 'text';
+
+function setQuestMode(mode) {
+  questMode = mode;
+  document.getElementById('quest-text-mode').style.display = mode==='text' ? '' : 'none';
+  document.getElementById('quest-img-mode').style.display  = mode==='img'  ? '' : 'none';
+  document.getElementById('qbtn-text').classList.toggle('active', mode==='text');
+  document.getElementById('qbtn-img').classList.toggle('active', mode==='img');
+  save();
+}
+
+function questImgClick() {
+  document.getElementById('quest-img-input').click();
+}
+
+function handleQuestImgFile(input) {
+  var file = input.files[0]; input.value = '';
+  if (!file || !file.type.startsWith('image/')) return;
+  var img = new Image();
+  var url = URL.createObjectURL(file);
+  img.onload = function() {
+    URL.revokeObjectURL(url);
+    // Resize proportionally to max 900px on longest side
+    var maxSide = 900;
+    var w = img.width, h = img.height;
+    if (w > maxSide || h > maxSide) {
+      if (w >= h) { h = Math.round(h * maxSide / w); w = maxSide; }
+      else        { w = Math.round(w * maxSide / h); h = maxSide; }
+    }
+    var canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    var b64 = canvas.toDataURL('image/jpeg', 0.80);
+    setQuestImg(b64);
+    save();
+  };
+  img.src = url;
+}
+
+function setQuestImg(b64) {
+  var imgEl = document.getElementById('quest-img');
+  var ph    = document.getElementById('quest-img-placeholder');
+  imgEl.src = b64; imgEl.style.display = '';
+  ph.style.display = 'none';
+}
+
+function deleteQuestImg(e) {
+  e.stopPropagation();
+  var imgEl = document.getElementById('quest-img');
+  imgEl.src = ''; imgEl.style.display = 'none';
+  document.getElementById('quest-img-placeholder').style.display = '';
+  save();
+}
+
+
+/* ─── ZLECENIE (Quest) ───────────────────────── */
+var zlecenieMode = 'text'; // 'text' or 'img'
+
+function initZlecenie() {
+  // Set current date in PDA header
+  var now = new Date();
+  var dd = String(now.getDate()).padStart(2,'0');
+  var mm = String(now.getMonth()+1).padStart(2,'0');
+  var yy = now.getFullYear();
+  var hh = String(now.getHours()).padStart(2,'0');
+  var mi = String(now.getMinutes()).padStart(2,'0');
+  var el = document.getElementById('pda-date');
+  if (el) el.textContent = dd+'.'+mm+'.'+yy+' '+hh+':'+mi;
+}
+
+function toggleZlecenieMode() {
+  zlecenieMode = zlecenieMode === 'text' ? 'img' : 'text';
+  applyZlecenieMode();
+  save();
+}
+
+function applyZlecenieMode() {
+  var txtDiv = document.getElementById('zlecenie-text');
+  var imgDiv = document.getElementById('zlecenie-img');
+  var btn    = document.getElementById('pda-mode-btn');
+  if (zlecenieMode === 'text') {
+    txtDiv.style.display = '';
+    imgDiv.style.display = 'none';
+    if (btn) btn.textContent = '\uD83D\uDCF7 Tryb: tekst';
+  } else {
+    txtDiv.style.display = 'none';
+    imgDiv.style.display = '';
+    if (btn) btn.textContent = '\u270F Tryb: obraz';
+  }
+}
+
+function zlecenieImgClick() {
+  document.getElementById('zlecenie-img-input').click();
+}
+
+function handleZlecenieImg(input) {
+  var file = input.files[0]; input.value = '';
+  if (!file || !file.type.startsWith('image/')) return;
+  var img = new Image();
+  var url = URL.createObjectURL(file);
+  img.onload = function() {
+    URL.revokeObjectURL(url);
+    // Scale to max 900px wide, keep aspect ratio
+    var maxW = 900;
+    var w = Math.min(img.width, maxW);
+    var h = Math.round(img.height * (w / img.width));
+    var canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    var b64 = canvas.toDataURL('image/jpeg', 0.82);
+    var el = document.getElementById('zlecenie-img-el');
+    var ph = document.getElementById('zlecenie-img-ph');
+    el.src = b64; el.style.display = 'block';
+    if (ph) ph.style.display = 'none';
+    save();
+  };
+  img.src = url;
+}
+
+function deleteZlecenieImg(e) {
+  e.stopPropagation();
+  var el = document.getElementById('zlecenie-img-el');
+  var ph = document.getElementById('zlecenie-img-ph');
+  el.src = ''; el.style.display = 'none';
+  if (ph) ph.style.display = '';
+  save();
+}
+
+
+/* ─── ZLECENIE ───────────────────────────────── */
+var zMode = 'text';
+
+function zInitDate() {
+  var now = new Date();
+  var d = ('0'+now.getDate()).slice(-2)+'.'+('0'+(now.getMonth()+1)).slice(-2)+'.'+now.getFullYear();
+  var t = ('0'+now.getHours()).slice(-2)+':'+('0'+now.getMinutes()).slice(-2);
+  var el = document.getElementById('pda-ts');
+  if (el) el.textContent = d + ' ' + t;
+}
+
+function zToggleMode() {
+  zMode = zMode === 'text' ? 'img' : 'text';
+  zApplyMode();
+  save();
+}
+
+function zApplyMode() {
+  var txt = document.getElementById('z-text-mode');
+  var img = document.getElementById('z-img-mode');
+  var btn = document.getElementById('pda-mode-btn');
+  if (!txt) return;
+  txt.style.display = zMode === 'text' ? '' : 'none';
+  img.style.display = zMode === 'img'  ? '' : 'none';
+  if (btn) btn.textContent = zMode === 'text' ? '\uD83D\uDCF7 tryb: tekst' : '\u270F tryb: obraz';
+}
+
+function zImgClick() {
+  document.getElementById('z-img-input').click();
+}
+
+function zImgLoad(input) {
+  var file = input.files[0]; input.value = '';
+  if (!file || !file.type.startsWith('image/')) return;
+  var img = new Image();
+  var url = URL.createObjectURL(file);
+  img.onload = function() {
+    URL.revokeObjectURL(url);
+    // Scale: max 700px wide, keep aspect ratio (original ~1108x728)
+    var maxW = 700;
+    var w = Math.min(img.width, maxW);
+    var h = Math.round(img.height * (w / img.width));
+    var canvas = document.createElement('canvas');
+    canvas.width = w; canvas.height = h;
+    canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+    var b64 = canvas.toDataURL('image/jpeg', 0.80);
+    var el = document.getElementById('z-img-el');
+    var ph = document.getElementById('z-img-ph');
+    el.src = b64; el.style.display = 'block';
+    if (ph) ph.style.display = 'none';
+    save();
+  };
+  img.src = url;
+}
+
+function zImgDel(e) {
+  e.stopPropagation();
+  var el = document.getElementById('z-img-el');
+  var ph = document.getElementById('z-img-ph');
+  el.src = ''; el.style.display = 'none';
+  if (ph) ph.style.display = '';
+  save();
+}
+
 function init() {
   buildAttrs();
   for (var i=0;i<SKILL_IDS.length;i++) buildSkillCircles('sk-'+SKILL_IDS[i]);
@@ -2357,6 +2938,7 @@ function init() {
   prevLvl = calcLevel(parseInt(document.getElementById('f-exp').value)||0).lvl;
   updateEXP();
   updateWarnings();
+  initZlecenie();
   setupPWA();
   initFirebase();
 
