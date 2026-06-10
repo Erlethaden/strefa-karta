@@ -2112,7 +2112,7 @@ function removeFromRoster(charId) {
 function writeLog(action, details) {
   if (!fbUser || !fbDB) return;
   var ttl = new Date();
-  ttl.setDate(ttl.getDate() + 7); // auto-delete after 7 days (Firestore TTL)
+  ttl.setDate(ttl.getDate() + 3); // auto-delete after 3 days (Firestore TTL)
   fbDB.collection('logs').add({
     uid:       fbUser.uid,
     nick:      userNick || fbUser.displayName || '?',
@@ -2926,7 +2926,7 @@ document.addEventListener('DOMContentLoaded', init);
     <!-- Logi -->
     <div id="adm-logs" style="display:none">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center">
-        <button class="btn btn-amber" onclick="admCleanLogs()">&#128465; Wyczyść >7d</button>
+        <button class="btn btn-amber" onclick="admCleanLogs()">&#128465; Wyczyść >3d</button>
         <button class="btn btn-red"   onclick="admDeleteAllLogs()">&#128465; Wyczyść WSZYSTKO</button>
         <button class="btn"           onclick="admLoadLogs()">&#8635; Odśwież</button>
         <span id="adm-log-status" style="font-size:10px;color:var(--g3)"></span>
