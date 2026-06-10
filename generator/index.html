@@ -735,68 +735,106 @@ $('btn-gif').addEventListener('click', async () => {
 $('btn-vid').addEventListener('click', async () => {
   const btn = $('btn-vid');
 
-  // Sprawdź wsparcie MediaRecorder
   const mimes = ['video/webm;codecs=vp9,opus','video/webm;codecs=vp8,opus','video/webm'];
-  const mime  = mimes.find(t => {try{return MediaRecorder.isTypeSupported(t)}catch{return false}});
+  const mime  = mimes.find(t => { try { return MediaRecorder.isTypeSupported(t); } catch { return false; } });
   if (!mime) {
-    alert('Twoja przeglądarka nie obsługuje nagrywania wideo.\nUżyj Chrome lub Firefox na desktopie.');
+    alert('Twoja przeglądarka nie obsługuje nagrywania wideo.\nUżyj Chrome lub Firefox.');
     return;
   }
 
-  btn.disabled = true; btn.textContent = '... renderowanie ...';
+  btn.disabled = true;
+  btn.textContent = '... renderowanie ...';
 
   try {
     const scale = 2, pad = 34;
     const base  = await captureBase(scale, pad);
 
+    /* Canvas animacji */
     const ac  = document.createElement('canvas');
-    ac.width  = base.width; ac.height = base.height;
+    ac.width  = base.width;
+    ac.height = base.height;
     const ctx = ac.getContext('2d');
+    drawAnimFrame(ctx, base, 0, scale, pad); // pierwsza klatka przed startem streamu
 
-    // Audio
-    const audioCtx   = new (window.AudioContext || window.webkitAudioContext)();
-    const arrayBuf   = await fetch(AUDIO_DATA_URL).then(r => r.arrayBuffer());
-    const audioBuf   = await audioCtx.decodeAudioData(arrayBuf);
-    const src        = audioCtx.createBufferSource();
-    src.buffer       = audioBuf;
-    const audioDest  = audioCtx.createMediaStreamDestination();
+    /* Audio */
+    const audioCtx  = new (window.AudioContext || window.webkitAudioContext)();
+    const arrayBuf  = await fetch(AUDIO_DATA_URL).then(r => r.arrayBuffer());
+    const audioBuf  = await audioCtx.decodeAudioData(arrayBuf);
+    const src       = audioCtx.createBufferSource();
+    src.buffer      = audioBuf;
+    const audioDest = audioCtx.createMediaStreamDestination();
     src.connect(audioDest);
 
-    // Streams
+    /* Połącz strumienie */
     const videoStream = ac.captureStream(24);
     const combined    = new MediaStream([
       ...videoStream.getVideoTracks(),
       ...audioDest.stream.getAudioTracks(),
     ]);
 
-    const recorder = new MediaRecorder(combined, {mimeType: mime});
+    const recorder = new MediaRecorder(combined, { mimeType: mime });
     const chunks   = [];
-    recorder.ondataavailable = e => { if (e.data.size > 0) chunks.push(e.data); };
-    recorder.onstop = () => {
-      audioCtx.close();
-      const blob = new Blob(chunks, {type: mime});
-      showMediaModal(URL.createObjectURL(blob), 'video', getSlug());
-      btn.disabled = false; btn.textContent = '▶ Wideo + dźwięk';
+
+    recorder.ondataavailable = e => {
+      if (e.data && e.data.size > 0) chunks.push(e.data);
     };
 
-    // Animacja + nagrywanie
-    const t0 = performance.now();
-    recorder.start(100);
+    /* onstop — zawsze resetuje przycisk, łapie wszystkie błędy */
+    recorder.onstop = () => {
+      clearTimeout(fallback);
+      running = false;
+      try {
+        try { audioCtx.close(); } catch {}
+        if (chunks.length === 0) throw new Error('Brak danych — nagrywanie nie powiodło się.');
+        const blob = new Blob(chunks, { type: mime });
+        showMediaModal(URL.createObjectURL(blob), 'video', getSlug());
+      } catch(e) {
+        alert('Błąd zapisu wideo:\n' + e.message);
+      } finally {
+        btn.disabled    = false;
+        btn.textContent = '▶ Wideo + dźwięk';
+      }
+    };
+
+    /* Fallback — jeśli onstop nie odpali w ciągu 4s po stopie */
+    let fallback = setTimeout(() => {
+      if (btn.disabled) {
+        running = false;
+        try { audioCtx.close(); } catch {}
+        alert('Przekroczono czas oczekiwania na finalizację nagrania.\nSpróbuj w Chrome na desktopie.');
+        btn.disabled    = false;
+        btn.textContent = '▶ Wideo + dźwięk';
+      }
+    }, AUDIO_DURATION_MS + 5000);
+
+    /* Animacja — żyje aż do running=false (przez onstop lub fallback) */
+    let running = true;
+    const t0    = performance.now();
+
+    recorder.start(200); // zbieraj dane co 200ms
     src.start();
 
     const loop = () => {
+      if (!running) return;
       const elapsed = performance.now() - t0;
-      btn.textContent = `▶ Nagrywanie... ${Math.round(elapsed/100)/10}s`;
-      drawAnimFrame(ctx, base, elapsed / 1000, scale, pad);
-      if (elapsed < AUDIO_DURATION_MS) requestAnimationFrame(loop);
+      drawAnimFrame(ctx, base, (elapsed / 1000) % 60, scale, pad);
+      btn.textContent = elapsed < AUDIO_DURATION_MS
+        ? `▶ Nagrywanie... ${(elapsed / 1000).toFixed(1)}s`
+        : '▶ Finalizowanie...';
+      requestAnimationFrame(loop);
     };
     requestAnimationFrame(loop);
 
-    setTimeout(() => { recorder.stop(); try{src.stop();}catch{} }, AUDIO_DURATION_MS + 300);
+    /* Zatrzymaj po czasie trwania audio + bufor */
+    setTimeout(() => {
+      try { src.stop(); } catch {}
+      recorder.stop();
+    }, AUDIO_DURATION_MS + 400);
 
   } catch(e) {
-    alert('Błąd wideo: ' + e.message);
-    btn.disabled = false; btn.textContent = '▶ Wideo + dźwięk';
+    alert('Błąd wideo:\n' + e.message);
+    btn.disabled    = false;
+    btn.textContent = '▶ Wideo + dźwięk';
   }
 });
 
