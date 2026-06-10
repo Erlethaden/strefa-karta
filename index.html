@@ -880,6 +880,7 @@ var fbReady = (FIREBASE_CONFIG.apiKey !== 'BRAK');
 var fbAuth, fbDB, fbUser = null, currentCharId = null, charCache = [];
 var cloudSaveTimer = null;
 var userNick = '';
+var isNewChar = false; // true tylko po kliknięciu + Nowa
 
 function initFirebase() {
   if (!fbReady) {
@@ -1017,7 +1018,7 @@ function onCharSelectChange(id) {
   if (!id) return;
   for (var i = 0; i < charCache.length; i++) {
     if (charCache[i].id === id) {
-      currentCharId = id;
+      currentCharId = id; isNewChar = false;
       if (charCache[i].charData) applyData(charCache[i].charData);
       document.getElementById('btn-delete-char').style.display = 'inline-block';
       setCloudStatus('zaladowano', 'g');
@@ -1038,6 +1039,7 @@ function newCharClick() {
     }
   }
   currentCharId = null;
+  isNewChar = true; // zezwól na zapis nowej postaci
   resetSheet();
   document.getElementById('char-select').value = '';
   document.getElementById('btn-delete-char').style.display = 'none';
@@ -1075,10 +1077,14 @@ function cloudSave() {
     // localStorage zapisuje zawsze niezaleznie od tego.
     if (!pseudo) { setCloudStatus('', ''); return; }
     if (!currentCharId) {
-      // Nie twórz nowego ID automatycznie — zapobiega duplikatom.
-      // Użytkownik musi wybrać postać z listy lub kliknąć "+ Nowa".
-      setCloudStatus('↑ wybierz lub stwórz postać', 'a');
-      return;
+      if (charCache.length > 0 && !isNewChar) {
+        // Ma postacie w chmurze ale żadna nie wybrana — blokuj duplikat
+        setCloudStatus('↑ wybierz postać z listy', 'a');
+        return;
+      }
+      // Nowa postać (+ Nowa) lub pierwsza postać użytkownika — utwórz ID
+      currentCharId = fbDB.collection('users').doc(fbUser.uid).collection('characters').doc().id;
+      isNewChar = false;
     }
     setCloudStatus('...', 'a');
     fbDB.collection('users').doc(fbUser.uid).collection('characters').doc(currentCharId)
