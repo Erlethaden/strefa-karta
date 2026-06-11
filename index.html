@@ -966,10 +966,10 @@ function loadCharList() {
                  lastMod: d.data().lastModified, charData: d.data().charData };
       });
       rebuildCharSelect();
-      // Auto-dopasuj lub wybierz pierwszą postać z listy
+      // Auto-wybierz postać — zawsze ładuj pełne dane z Firestore
       if (!currentCharId && charCache.length > 0) {
-        // Najpierw spróbuj dopasować po pseudonimie z localStorage
-        var matched = false;
+        var autoChar = null;
+        // Szukaj po pseudonimie z localStorage
         try {
           var lRaw = localStorage.getItem(SAVE_KEY);
           if (lRaw) {
@@ -977,25 +977,21 @@ function loadCharList() {
             if (lPseudo) {
               for (var mi = 0; mi < charCache.length; mi++) {
                 if (charCache[mi].pseudonim === lPseudo) {
-                  currentCharId = charCache[mi].id;
-                  document.getElementById('char-select').value = currentCharId;
-                  document.getElementById('btn-delete-char').style.display = 'inline-block';
-                  setCloudStatus('zsynchronizowano', 'g');
-                  matched = true;
-                  break;
+                  autoChar = charCache[mi]; break;
                 }
               }
             }
           }
         } catch(e2) {}
-        // Jeśli brak dopasowania — załaduj pierwszą postać z listy (najnowszą)
-        if (!matched) {
-          currentCharId = charCache[0].id;
-          document.getElementById('char-select').value = currentCharId;
-          document.getElementById('btn-delete-char').style.display = 'inline-block';
-          if (charCache[0].charData) applyData(charCache[0].charData);
-          setCloudStatus('zsynchronizowano', 'g');
-        }
+        // Fallback: pierwsza postać z listy
+        if (!autoChar) autoChar = charCache[0];
+        // Zawsze applyData z Firestore — gwarantuje pełne dane (plecak, artefakty, itd.)
+        currentCharId = autoChar.id;
+        isNewChar = false;
+        document.getElementById('char-select').value = currentCharId;
+        document.getElementById('btn-delete-char').style.display = 'inline-block';
+        if (autoChar.charData) applyData(autoChar.charData);
+        setCloudStatus('zsynchronizowano', 'g');
       }
     })
     .catch(function(e) { setCloudStatus('blad: ' + e.code, 'r'); });
