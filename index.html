@@ -1006,13 +1006,27 @@ function loadCharList() {
         } catch(e2) {}
         // Fallback: pierwsza postać z listy
         if (!autoChar) autoChar = charCache[0];
-        // Zawsze applyData z Firestore — gwarantuje pełne dane (plecak, artefakty, itd.)
+        // Świeży GET z Firestore — zawsze najnowsze dane, nie z cache
         currentCharId = autoChar.id;
         isNewChar = false;
         document.getElementById('char-select').value = currentCharId;
         document.getElementById('btn-delete-char').style.display = 'inline-block';
-        if (autoChar.charData) applyData(autoChar.charData);
-        setCloudStatus('zsynchronizowano', 'g');
+        setCloudStatus('wczytywanie...', 'a');
+        fbDB.collection('users').doc(fbUser.uid).collection('characters').doc(autoChar.id).get()
+          .then(function(freshDoc) {
+            var data = (freshDoc.exists && freshDoc.data().charData)
+              ? freshDoc.data().charData
+              : autoChar.charData;
+            if (data) {
+              applyData(data);
+              localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+            }
+            setCloudStatus('zsynchronizowano', 'g');
+          })
+          .catch(function() {
+            if (autoChar.charData) applyData(autoChar.charData);
+            setCloudStatus('zsynchronizowano', 'g');
+          });
       }
     })
     .catch(function(e) { setCloudStatus('blad: ' + e.code, 'r'); });
