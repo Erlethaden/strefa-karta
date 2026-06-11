@@ -516,6 +516,16 @@ body{background:#040604;color:var(--t2);font-family:'Share Tech Mono',monospace;
   font-size:9px;padding:2px 8px;cursor:pointer;letter-spacing:1px;transition:.2s;float:right;margin-top:-2px}
 .pda-mode-btn:hover{border-color:var(--g2);color:var(--g3)}
 @media(max-width:560px){.pda-cols{grid-template-columns:1fr}.pda-left{border-right:none;border-bottom:1px solid var(--g1)}}
+
+/* ── ARMOR STATS ─────────────────────────────── */
+.armor-stats{display:grid;grid-template-columns:repeat(6,1fr);gap:4px;margin-top:6px}
+.armor-stat{display:flex;flex-direction:column;align-items:center;gap:2px}
+.armor-stat-lbl{font-size:8px;color:var(--t0);letter-spacing:1px;text-align:center}
+.armor-stat-inp{width:100%;background:none;border:none;border-bottom:1px solid var(--bd1);
+  color:var(--a2);font-family:'Share Tech Mono',monospace;font-size:12px;
+  text-align:center;outline:none;padding:1px 0}
+.armor-stat-inp:focus{border-bottom-color:var(--a2)}
+@media(max-width:560px){.armor-stats{grid-template-columns:repeat(3,1fr)}}
 /* ── WARNING STRIP ──────────────────────────────── */
 #warn-strip{max-width:1140px;margin:0 auto;display:none;align-items:center;gap:0;flex-wrap:wrap;font-family:'Share Tech Mono',monospace;font-size:11px;letter-spacing:1px;border-bottom:1px solid transparent;overflow:hidden}
 #warn-strip.ws-a{display:flex;background:rgba(122,84,16,.35);border-color:var(--a2)}
@@ -765,6 +775,17 @@ html{background:#040604;scrollbar-width:thin;scrollbar-color:var(--g1) var(--bg2
       <div class="eline pl80" style="align-items:center"><span class="snote">Stan:</span><div class="cbrow" id="cb-pancerz"></div></div>
       <div class="eline mt6"><span class="el">Helm / Maska</span><input class="ein" type="text" id="f-helm" placeholder="Nazwa..."></div>
       <div class="eline pl80" style="align-items:center"><span class="snote">Stan:</span><div class="cbrow" id="cb-helm"></div></div>
+      <div class="eline mt6" style="margin-top:10px">
+        <span class="el" style="font-size:8px;letter-spacing:2px">ODPORNOŚCI</span>
+        <div class="armor-stats" style="flex:1">
+          <div class="armor-stat"><span class="armor-stat-lbl">FIZ</span><input class="armor-stat-inp" type="number" id="f-armor-fiz" min="0" max="99" placeholder="0"></div>
+          <div class="armor-stat"><span class="armor-stat-lbl">TER</span><input class="armor-stat-inp" type="number" id="f-armor-ter" min="0" max="99" placeholder="0"></div>
+          <div class="armor-stat"><span class="armor-stat-lbl">ELE</span><input class="armor-stat-inp" type="number" id="f-armor-ele" min="0" max="99" placeholder="0"></div>
+          <div class="armor-stat"><span class="armor-stat-lbl">CHE</span><input class="armor-stat-inp" type="number" id="f-armor-che" min="0" max="99" placeholder="0"></div>
+          <div class="armor-stat"><span class="armor-stat-lbl">RAD</span><input class="armor-stat-inp" type="number" id="f-armor-rad" min="0" max="99" placeholder="0"></div>
+          <div class="armor-stat"><span class="armor-stat-lbl">KRW</span><input class="armor-stat-inp" type="number" id="f-armor-krw" min="0" max="99" placeholder="0"></div>
+        </div>
+      </div>
       <div class="eline mt6"><span class="el">Detektor</span><input class="ein" type="text" id="f-detektor" placeholder="Nazwa..."></div>
     </div>
     <div>
@@ -873,7 +894,7 @@ var TXT_FIELDS = [
   'f-bron-g','f-bron-g-typ','f-bron-g-opis','f-bron-g-obr','f-ammo-g-c','f-ammo-g-m',
   'f-bron-b','f-bron-b-typ','f-bron-b-opis','f-bron-b-obr','f-ammo-b-c','f-ammo-b-m',
   'f-bron-bw','f-bron-bw-typ','f-bron-bw-opis','f-bron-bw-obr',
-  'f-pancerz','f-helm','f-detektor','f-blizny','f-notatki','sk-custom-name'
+  'f-pancerz','f-helm','f-detektor','f-armor-fiz','f-armor-ter','f-armor-ele','f-armor-che','f-armor-rad','f-armor-krw','f-blizny','f-notatki','sk-custom-name'
 ];
 
 /* ─── firebase state ─────────────────────────── */
@@ -2718,16 +2739,36 @@ function admRenderChangelogUsers(docs, version) {
   listEl.innerHTML = '';
   docs.forEach(function(d) {
     var u = d.data();
+    var uid = d.id;
     var hasSeen = u.seenChangelog === version;
     var row = document.createElement('div');
-    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:4px 0;border-bottom:1px solid var(--bd1);font-size:11px';
-    row.innerHTML =
-      '<span style="color:' + (hasSeen ? 'var(--g2)' : 'var(--r3)') + ';font-size:12px">' +
-        (hasSeen ? '✓' : '○') + '</span>' +
-      '<span style="color:var(--t2);flex:1">' + escHtml(u.nick || '?') + '</span>' +
-      '<span style="color:var(--t0);font-size:10px">' + escHtml(u.email || '') + '</span>';
+    row.style.cssText = 'display:flex;align-items:center;gap:10px;padding:5px 0;border-bottom:1px solid var(--bd1);font-size:11px';
+    var cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.checked = hasSeen;
+    cb.style.cssText = 'cursor:pointer;accent-color:var(--g2)';
+    (function(id, el){ cb.onchange = function(){ admToggleUserSeen(id, el.checked); }; })(uid, cb);
+    var nick = document.createElement('span');
+    nick.style.cssText = 'color:var(--t2);flex:1'; nick.textContent = u.nick || '?';
+    var email = document.createElement('span');
+    email.style.cssText = 'color:var(--t0);font-size:10px'; email.textContent = u.email || '';
+    var status = document.createElement('span');
+    status.style.cssText = 'font-size:10px;color:' + (hasSeen ? 'var(--g2)' : 'var(--r3)');
+    status.textContent = hasSeen ? '✓ widział' : '○ nie widział';
+    row.append(cb, nick, email, status);
     listEl.appendChild(row);
   });
+}
+
+function admToggleUserSeen(uid, seen) {
+  if (!fbDB) return;
+  var ver = seen ? (currentChangelogVer || '') : '';
+  fbDB.collection('users').doc(uid).set({ seenChangelog: ver }, { merge: true })
+    .then(function() {
+      document.getElementById('adm-cl-status').textContent = 'Zaktualizowano';
+      setTimeout(function(){ document.getElementById('adm-cl-status').textContent=''; }, 1500);
+      if (currentChangelogVer) admLoadChangelogStats(currentChangelogVer);
+    })
+    .catch(function(e) { alert('Błąd: ' + e.message); });
 }
 
 function admSaveChangelog() {
@@ -2748,25 +2789,25 @@ function admSaveChangelog() {
   }).catch(function(e) { document.getElementById('adm-cl-status').textContent = 'Błąd: ' + e.message; });
 }
 
-function admResetChangelogSeen() {
-  if (!confirm('Zresetować "widziałem" dla wszystkich użytkowników?\nWszyscy zobaczą changelog ponownie.')) return;
+function admResetChangelogSeen() { admMarkAllSeen(false); }
+
+function admMarkAllSeen(seen) {
+  if (!fbDB) return;
+  var msg = seen ? 'Oznaczyć wszystkich jako "widzieli"?' : 'Zresetować wszystkich?';
+  if (!confirm(msg)) return;
   fbDB.collection('users').get().then(function(snap) {
     var batch = fbDB.batch();
-    snap.docs.forEach(function(d) {
-      batch.update(d.ref, { seenChangelog: '' });
-    });
+    var ver = seen ? (currentChangelogVer || '') : '';
+    snap.docs.forEach(function(d) { batch.update(d.ref, { seenChangelog: ver }); });
     batch.commit().then(function() {
-      document.getElementById('adm-cl-status').textContent = 'Zresetowano dla ' + snap.docs.length + ' użytkowników.';
+      document.getElementById('adm-cl-status').textContent =
+        (seen ? 'Oznaczono' : 'Zresetowano') + ' ' + snap.docs.length + ' użytkowników.';
       if (currentChangelogVer) admLoadChangelogStats(currentChangelogVer);
     });
   });
 }
 
 /* ─── ZLECENIE ───────────────────────────────── */
-
-function questImgClick() {
-  document.getElementById('quest-img-input').click();
-}
 
 function handleQuestImgFile(input) {
   var file = input.files[0]; input.value = '';
@@ -2991,6 +3032,8 @@ document.addEventListener('DOMContentLoaded', init);
     <div id="adm-changelog" style="display:none">
       <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;align-items:center">
         <button class="btn btn-green" onclick="admSaveChangelog()">&#128190; Zapisz changelog</button>
+        <button class="btn btn-dim" onclick="admMarkAllSeen(true)" style="font-size:9px">✓ Wszyscy widzieli</button>
+        <button class="btn btn-dim" onclick="admMarkAllSeen(false)" style="font-size:9px">○ Resetuj wszystkich</button>
         <span id="adm-cl-status" style="font-size:10px;color:var(--g3)"></span>
       </div>
       <p style="font-size:10px;color:var(--t0);margin-bottom:8px;line-height:1.7">
