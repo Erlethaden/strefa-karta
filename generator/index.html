@@ -531,6 +531,45 @@ function render() {
         ${body ? `<div class="sc-body">${esc(body).replace(/\n/g,'<br>')}</div>` : ''}
       </div>
     </div>`;
+
+  fitScreenContent();
+}
+
+/* Dopasowanie wielkości czcionki gdy treść za długa */
+function fitScreenContent() {
+  const content = $('sc-content');
+  if (!content || !content.firstElementChild) return;
+
+  /* clientHeight = dostępna wysokość ekranu (layout value, niezależnie od CSS transform) */
+  const avail = content.clientHeight;
+  if (avail < 10) return;
+
+  /* Bazowe rozmiary przy scale=1.0 — muszą pasować do CSS */
+  const bases = {
+    '.sc-body':      9.5,
+    '.sc-subj':      12,
+    '.sc-val':       10.5,
+    '.sc-rew-val':   10.5,
+    '.sc-lbl':       7,
+    '.sc-rew-lbl':   7,
+    '.sc-alert-lbl': 8,
+  };
+
+  const applyScale = s => {
+    for (const [sel, base] of Object.entries(bases)) {
+      const el = content.querySelector(sel);
+      if (el) el.style.fontSize = (base * s).toFixed(2) + 'px';
+    }
+  };
+
+  /* Reset do pełnego rozmiaru, potem zmniejszaj aż się zmieści */
+  applyScale(1.0);
+  let scale = 1.0;
+  while (content.scrollHeight > avail + 2 && scale > 0.62) {
+    scale = Math.max(0.62, scale - 0.02);
+    applyScale(scale);
+  }
+}
 }
 
 ['fi-sub','fi-sndr','fi-body','fi-rew'].forEach(id => $(id).addEventListener('input', render));
