@@ -213,14 +213,15 @@ body {
 
 /* ── DWIE KOLUMNY ── */
 .sc-cols { display: grid; grid-template-columns: 118px 1fr; gap: 10px; }
-.sc-col-l { border-right: 1px solid var(--sc-div); padding-right: 10px; }
+.sc-col-l { border-right: 1px solid var(--sc-div); padding-right: 10px; min-width: 0; overflow: hidden; }
+.sc-col-r { min-width: 0; }  /* bez tego grid nie zwęża kolumny i tekst nie zawija */
 
 /* ── TYPOGRAFIA EKRANU ── */
 .sc-lbl {
   font-size: 7px; letter-spacing: 2px;
   color: var(--sc-dim); text-transform: uppercase; margin-bottom: 3px;
 }
-.sc-val { font-size: 10.5px; color: var(--sc-mid); line-height: 1.45; margin-bottom: 8px; }
+.sc-val { font-size: 10.5px; color: var(--sc-mid); line-height: 1.45; margin-bottom: 8px; word-break: break-word; }
 .sc-hr  { border: none; border-top: 1px solid var(--sc-div); margin: 7px 0; }
 
 .sc-alert { display: flex; align-items: center; gap: 5px; margin-bottom: 8px; }
@@ -235,8 +236,10 @@ body {
   font-size: 12px; color: var(--sc-hi);
   line-height: 1.4; letter-spacing: .5px;
   text-transform: uppercase; margin-bottom: 7px;
+  word-break: break-word;
+  word-break: break-word;
 }
-.sc-body { font-size: 9.5px; color: var(--sc-mid); line-height: 1.8; letter-spacing: .15px; }
+.sc-body { font-size: 9.5px; color: var(--sc-mid); line-height: 1.8; letter-spacing: .15px; word-break: break-word; overflow-wrap: break-word; }
 
 .sc-rew-lbl { font-size: 7px; letter-spacing: 2px; color: var(--am-dk); text-transform: uppercase; margin-bottom: 3px; }
 .sc-rew-val { font-size: 10.5px; color: var(--am); letter-spacing: .5px; }
@@ -540,11 +543,10 @@ function fitScreenContent() {
   const content = $('sc-content');
   if (!content || !content.firstElementChild) return;
 
-  /* clientHeight = dostępna wysokość ekranu (layout value, niezależnie od CSS transform) */
-  const avail = content.clientHeight;
-  if (avail < 10) return;
+  /* Dostępna wysokość treści ekranu — stała geometria PDA, nie zależy od DOM:
+     330 (PDA) − 36 (padding PDA 18+18) − 10 (padding bezel 5+5) − 20 (padding screen 10+10) = 264px */
+  const AVAIL = PDA_H - 66;  // 264px
 
-  /* Bazowe rozmiary przy scale=1.0 — muszą pasować do CSS */
   const bases = {
     '.sc-body':      9.5,
     '.sc-subj':      12,
@@ -562,14 +564,13 @@ function fitScreenContent() {
     }
   };
 
-  /* Reset do pełnego rozmiaru, potem zmniejszaj aż się zmieści */
+  /* Reset do pełnego rozmiaru, potem zmniejszaj krok po kroku */
   applyScale(1.0);
   let scale = 1.0;
-  while (content.scrollHeight > avail + 2 && scale > 0.62) {
-    scale = Math.max(0.62, scale - 0.02);
+  while (content.scrollHeight > AVAIL + 2 && scale > 0.55) {
+    scale = Math.max(0.55, scale - 0.02);
     applyScale(scale);
   }
-}
 }
 
 ['fi-sub','fi-sndr','fi-body','fi-rew'].forEach(id => $(id).addEventListener('input', render));
@@ -611,54 +612,47 @@ function drawGlow(ctx, x, y, outerR, innerR, outer, inner, alpha) {
   ctx.restore();
 }
 
-/* Zakłócenia ekranu — seamless: glitch=0 na granicy pętli, szczyt w połowie */
-function drawGlitch(ctx, base, t, scale, pad, loopDur) {
-  const phase = (t % loopDur) / loopDur;
-  const amt   = Math.pow(Math.sin(phase * Math.PI), 2); // 0→peak→0, gładko
-  if (amt < 0.03) return;
-
-  // Granice obszaru ekranu w koordynatach canvasa
-  const sx = Math.round(pad + 68  * scale);
-  const sy = Math.round(pad + 33  * scale);
+/* Wspólne wizualne efekty glitchu — używane przez oba tryby animacji */
+function applyGlitchVisuals(ctx, base, amt, scale, pad) {
+  const sx = Math.round(pad + 68 * scale);
+  const sy = Math.round(pad + 33 * scale);
   const sw = Math.round(358 * scale);
   const sh = Math.round(263 * scale);
-
-  // 1. Poziome szarpnięcia (displaced strips)
+  // Poziome szarpnięcia
   const nTears = 2 + Math.floor(amt * 4);
   for (let i = 0; i < nTears; i++) {
     const fy = sy + Math.floor(Math.random() * sh);
     const fh = Math.ceil((1 + Math.random() * 2) * scale);
     const dx = (Math.random() - 0.5) * 22 * amt * scale;
-    ctx.save();
-    ctx.beginPath(); ctx.rect(sx, fy, sw, fh); ctx.clip();
-    ctx.drawImage(base, dx, 0);
-    ctx.restore();
+    ctx.save(); ctx.beginPath(); ctx.rect(sx, fy, sw, fh); ctx.clip();
+    ctx.drawImage(base, dx, 0); ctx.restore();
   }
-
-  // 2. Losowe znaki statyki nad ekranem
+  // Znaki statyki
   const fz = Math.round(9 * scale);
-  ctx.save();
-  ctx.font = fz + 'px monospace';
+  ctx.save(); ctx.font = fz + 'px monospace';
   ctx.beginPath(); ctx.rect(sx, sy, sw, sh); ctx.clip();
-  const glChars = '█▓░01ABEFX●■◆─│';
-  const nChars  = Math.floor(amt * 24);
-  for (let i = 0; i < nChars; i++) {
+  const glCh = '█▓░01ABEFX●■◆─│';
+  const nCh  = Math.floor(amt * 24);
+  for (let i = 0; i < nCh; i++) {
     const gx = sx + Math.random() * (sw - fz);
     const gy = sy + fz + Math.random() * (sh - fz * 2);
-    ctx.fillStyle   = Math.random() > 0.6 ? '#ffcc44' : '#d4ff70';
+    ctx.fillStyle = Math.random() > 0.6 ? '#ffcc44' : '#d4ff70';
     ctx.globalAlpha = (0.4 + Math.random() * 0.6) * amt;
-    ctx.fillText(glChars[Math.floor(Math.random() * glChars.length)], gx, gy);
+    ctx.fillText(glCh[Math.floor(Math.random() * glCh.length)], gx, gy);
   }
   ctx.restore();
-
-  // 3. Błysk poziomej linii przy dużym glitchu
   if (amt > 0.5 && Math.random() > 0.4) {
-    ctx.save();
-    ctx.globalAlpha = 0.18 * amt;
-    ctx.fillStyle   = '#a8e040';
+    ctx.save(); ctx.globalAlpha = 0.18 * amt; ctx.fillStyle = '#a8e040';
     ctx.fillRect(sx, sy + Math.floor(Math.random() * sh), sw, Math.ceil(scale * 1.5));
     ctx.restore();
   }
+}
+
+/* Glitch środkowy (tryb bez przewijania) — szczyt w połowie pętli */
+function drawGlitch(ctx, base, t, scale, pad, loopDur) {
+  const phase = (t % loopDur) / loopDur;
+  const amt   = Math.pow(Math.sin(phase * Math.PI), 2);
+  if (amt > 0.03) applyGlitchVisuals(ctx, base, amt, scale, pad);
 }
 
 function drawAnimFrame(ctx, base, t, scale, pad, loopDur) {
@@ -679,7 +673,7 @@ function drawAnimFrame(ctx, base, t, scale, pad, loopDur) {
   if (loopDur) drawGlitch(ctx, base, t, scale, pad, loopDur);
 }
 
-/* Wspólna funkcja przechwycenia PDA */
+/* Bazowe przechwycenie PDA (normalne, z clippingiem) */
 async function captureBase(scale, pad) {
   const pda  = $('pda-device');
   const wrap = $('pda-wrap');
@@ -695,6 +689,133 @@ async function captureBase(scale, pad) {
   c.fillStyle = '#090b06'; c.fillRect(0, 0, out.width, out.height); c.drawImage(raw, pad, pad);
   pda.style.transform = sT; pda.style.transformOrigin = sO; wrap.style.height = sH;
   return out;
+}
+
+/* Przechwycenie + dane do animacji przewijania
+   Zwraca: bazowy kadr, rozszerzony kadr (pełna treść), czas pętli */
+async function captureScrollData(scale, pad) {
+  const sx = Math.round(pad + 68  * scale);
+  const sy = Math.round(pad + 33  * scale);
+  const sw = Math.round(358 * scale);
+  const sh = Math.round(263 * scale);
+  const BASE_LOOP = 3.6;
+
+  // Zawsze najpierw bazowy kadr — jest potrzebny niezależnie od reszty
+  const base = await captureBase(scale, pad);
+  const noScroll = { base, exp: null, sx, sy, sw, sh, overflow: 0, loopDur: BASE_LOOP };
+
+  // Na mobile pomijamy rozszerzony kadr — zbyt ryzykowne na słabszym sprzęcie
+  if (isMobile()) return noScroll;
+
+  // Sprawdź overflow DOM
+  const scc = $('sc-content');
+  const hasOverflow = (scc.scrollHeight - scc.clientHeight) > 10;
+  if (!hasOverflow) return noScroll;
+
+  // Próba rozszerzonego przechwycenia — z gwarancją restore w finally
+  const pda  = $('pda-device');
+  const scr  = pda.querySelector('.pda-screen');
+  const wrap = $('pda-wrap');
+  const sT   = pda.style.transform;
+  const sO   = pda.style.transformOrigin;
+
+  try {
+    // Ogranicz wysokość ekspansji — max 3 dodatkowe ekrany (unika ogromnych canvasów)
+    const SCREEN_CSS  = 263; // px, wysokość obszaru ekranu PDA
+    const MAX_EXTRA   = SCREEN_CSS * 3;
+    const expandedH   = Math.min(330 + MAX_EXTRA, 330 + (scc.scrollHeight - scc.clientHeight) + SCREEN_CSS);
+
+    pda.style.transform = ''; pda.style.transformOrigin = '';
+    wrap.style.height   = 'auto';
+    pda.style.height    = expandedH + 'px';   // ograniczona wysokość, nie "auto"
+    scr.style.overflow  = 'visible';
+    scc.style.height    = 'auto';
+
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+
+    const rawExp = await html2canvas(pda, {
+      scale, backgroundColor: '#090b06', useCORS: true, logging: false,
+    });
+
+    if (!rawExp || rawExp.width < 100 || rawExp.height <= base.height - pad * 2) {
+      return noScroll;
+    }
+
+    const exp = document.createElement('canvas');
+    exp.width  = rawExp.width  + pad * 2;
+    exp.height = rawExp.height + pad * 2;
+    const ec   = exp.getContext('2d');
+    ec.fillStyle = '#090b06';
+    ec.fillRect(0, 0, exp.width, exp.height);
+    ec.drawImage(rawExp, pad, pad);
+
+    const overflow = exp.height - base.height;
+    if (overflow < 10) return noScroll;
+
+    const totalScroll = overflow + sh * 0.30;
+    const loopDur = Math.max(1, Math.ceil(totalScroll / (50 * scale) / BASE_LOOP)) * BASE_LOOP;
+
+    return { base, exp, sx, sy, sw, sh, overflow, loopDur };
+
+  } catch {
+    return noScroll; // każdy błąd → graceful fallback
+
+  } finally {
+    // ZAWSZE przywróć PDA do normalnego stanu
+    pda.style.height    = '';
+    scr.style.overflow  = '';
+    scc.style.height    = '';
+    pda.style.transform = sT;
+    pda.style.transformOrigin = sO;
+    wrap.style.height   = PDA_H + 'px';
+    scalePDA();
+    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+  }
+}
+
+/* Rysuje klatkę animacji z przewijaniem (lub statyczną jeśli treść mieści się) */
+function drawScrollFrame(ctx, sd, t, scale, pad) {
+  const { base, exp, sx, sy, sw, sh, overflow, loopDur } = sd;
+  if (overflow <= 10) {
+    drawAnimFrame(ctx, base, t, scale, pad, loopDur);
+    return;
+  }
+  const phase = (t % loopDur) / loopDur;
+
+  // Glitch na granicy pętli — maskuje skok scrollowania
+  // |cos(phase·π)|^16: szczyt przy phase=0 i phase=1, zero przy phase=0.5
+  const resetAmt = Math.pow(Math.abs(Math.cos(phase * Math.PI)), 16);
+
+  // Przewijanie liniowe; bufor 30% ekranu na końcu (czarny obszar przed resetem)
+  const totalScroll = overflow + sh * 0.30;
+  const scrollY     = phase * totalScroll;
+
+  // 1. Bazowy kadr PDA
+  ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+  ctx.drawImage(base, 0, 0);
+
+  // 2. Przewijana treść w obszarze ekranu
+  ctx.save();
+  ctx.beginPath(); ctx.rect(sx, sy, sw, sh); ctx.clip();
+  ctx.drawImage(exp, sx, sy + scrollY, sw, sh, sx, sy, sw, sh);
+  ctx.restore();
+
+  // 3. Kropki LED / status / alert
+  for (const d of DOTS) {
+    const [cx, cy] = toCV(d.pdaX, d.pdaY, scale, pad);
+    const r = 5 * scale * d.rFactor;
+    let alpha;
+    if (d.type === 'blink') {
+      const cycle = ((t + d.phase) % d.period) / d.period;
+      alpha = cycle < 0.6 ? Math.sin((cycle / 0.6) * Math.PI) : 0;
+    } else {
+      alpha = 0.35 + 0.65 * (0.5 + 0.5 * Math.sin(((t + d.phase) / d.period) * Math.PI * 2));
+    }
+    if (alpha > 0.01) drawGlow(ctx, cx, cy, r*2.2, r*0.55, d.color[0], d.color[1], alpha);
+  }
+
+  // 4. Glitch przy resecie
+  if (resetAmt > 0.03) applyGlitchVisuals(ctx, base, resetAmt, scale, pad);
 }
 
 /* Pokaż wynik w modalu */
@@ -808,9 +929,11 @@ $('btn-exp').addEventListener('click', async () => {
   btn.disabled = true;
   btn.textContent = '... renderowanie ...';
   try {
-    const scale = isMobile() ? 2 : 3;
-    const pad   = isMobile() ? 34 : 52;
-    const base  = await captureBase(scale, pad);
+    // Cel: dłuższy bok = 1000px niezależnie od urządzenia
+    // PDA jest poziomy (520px), więc: scale * PDA_W + border*2 = 1000
+    const border = 40;
+    const scale  = (1000 - border * 2) / PDA_W; // ≈ 1.77 → output: 520*1.77+80 ≈ 1000px
+    const base  = await captureBase(scale, border);
     const dataUrl = base.toDataURL('image/png');
     if (!dataUrl || dataUrl.length < 100) throw new Error('Canvas pusty.');
     showMediaModal(dataUrl, 'png', getSlug());
@@ -828,15 +951,14 @@ $('btn-gif').addEventListener('click', async () => {
   btn.disabled = true; btn.textContent = '... przygotowanie ...';
   try {
     const scale = 2, pad = 34;
-    const base  = await captureBase(scale, pad);
+    const base = await captureBase(scale, pad);
 
-    // Wczytaj worker gif.js jako blob (omija CORS na worker)
     const workerText = await fetch('https://cdnjs.cloudflare.com/ajax/libs/gif.js/0.2.0/gif.worker.js').then(r => r.text());
     const workerUrl  = URL.createObjectURL(new Blob([workerText], {type:'application/javascript'}));
 
-    const fps = 10, dur = 3.6; // 3.6s — LCM(1.2,1.8,0.9): LED×3, status×2, amber×4 — seamless loop
+    const fps = 10, dur = 3.6;
     const frameDelay = Math.round(1000 / fps);
-    const frames = fps * dur;
+    const frames     = Math.round(fps * dur);
 
     const gif = new GIF({
       workers: 1, quality: 8, repeat: 0,
@@ -844,8 +966,8 @@ $('btn-gif').addEventListener('click', async () => {
       workerScript: workerUrl,
     });
 
-    const ac = document.createElement('canvas');
-    ac.width = base.width; ac.height = base.height;
+    const ac  = document.createElement('canvas');
+    ac.width  = base.width; ac.height = base.height;
     const ctx = ac.getContext('2d');
 
     for (let i = 0; i < frames; i++) {
@@ -885,7 +1007,8 @@ $('btn-vid').addEventListener('click', async () => {
 
   try {
     const scale = 2, pad = 34;
-    const base  = await captureBase(scale, pad);
+    const base = await captureBase(scale, pad);
+    const videoDurMs = AUDIO_DURATION_MS;
 
     /* Canvas animacji */
     const ac  = document.createElement('canvas');
@@ -902,6 +1025,7 @@ $('btn-vid').addEventListener('click', async () => {
     src.buffer      = audioBuf;
     const audioDest = audioCtx.createMediaStreamDestination();
     src.connect(audioDest);
+    src.loop = true; // zapętl audio jeśli animacja dłuższa niż dźwięk
 
     /* MediaRecorder */
     const videoStream = ac.captureStream(24);
@@ -929,7 +1053,7 @@ $('btn-vid').addEventListener('click', async () => {
       if (!animActive) return;
       const el = performance.now() - t0;
       try { drawAnimFrame(ctx, base, el / 1000, scale, pad, AUDIO_DURATION_MS / 1000); } catch {}
-      btn.textContent = el < AUDIO_DURATION_MS
+      btn.textContent = el < videoDurMs
         ? `▶ Nagrywanie... ${(el / 1000).toFixed(1)}s`
         : '▶ Finalizowanie...';
       requestAnimationFrame(animLoop);
@@ -941,7 +1065,7 @@ $('btn-vid').addEventListener('click', async () => {
     requestAnimationFrame(animLoop);
 
     /* Czekaj na koniec nagrania (async funkcja wstrzymana, animLoop dalej chodzi) */
-    await new Promise(r => setTimeout(r, AUDIO_DURATION_MS + 400));
+    await new Promise(r => setTimeout(r, videoDurMs + 400));
 
     /* Zatrzymaj audio i recorder */
     animActive = false;
